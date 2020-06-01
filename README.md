@@ -32,8 +32,10 @@ extension Scope {
 // 3. Now let's use it!
 
 class CoolCoordinator {
-    // 3.1. You can specify scope here: `@Injected(from: .application)`
-    // 3.2. You can use closure to create something using the container: `@Injected({ createFromContainer($0) })`
+    // 3.1. You can specify scope here: 
+    //      @Injected(from: .application)
+    // 3.2. You can use closure to create something using the container:
+    //      @Injected({ createFromContainer($0) })
     @Injected
     var container: Container
 

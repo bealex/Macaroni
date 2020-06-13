@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "Macaroni",
-    platforms: [ .iOS(.v13), .macOS(.v10_15) ],
+    platforms: [ .iOS(.v11), .macOS(.v10_14) ],
     products: [
         .library(name: "Macaroni", type: .static, targets: [ "Macaroni" ]),
         .executable(name: "Example", targets: [ "Example" ]),

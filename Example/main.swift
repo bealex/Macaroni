@@ -7,49 +7,63 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/master/LICENSE
 //
 
-// This is a simple example, how to use Macaroni.
 import Macaroni
 
-// 1. Create container factory, that can create container if Scope needs it.
+protocol MyService {
+    var testValue: String { get }
+}
+
+class MyServiceImplementation: MyService {
+    var testValue: String = "It works! Tasty!"
+}
 
 class MyContainerFactory: SingletonContainerFactory {
     override func build() -> Container {
         let container = SimpleContainer()
-        // 1.1. Let's register container itself as a dependency. :-)
-        container.register { () -> Container in container }
+        let myService = MyServiceImplementation()
+        container.register { () -> MyService in myService }
         return container
     }
 }
-
-// 2. Extend Scope to create your own scopes.
 
 extension Scope {
     static let application = Scope(factory: MyContainerFactory())
 
     static func create() {
-        // 2.1. We have to set default scope if we want to simplify its usage.
         self.default = application
     }
 }
 
-// 3. Now let's use it!
-
-class CoolCoordinator {
-    // 3.1. You can specify scope here: `@Injected(from: .application)`
-    // 3.2. You can use closure to create something using the container: `@Injected({ createFromContainer($0) })`
+class MyController {
     @Injected
-    var container: Container
+    var myService: MyService
 
-    func useContainer() {
-        print("Here is injected container: \(container)")
+    func testInjection() {
+        print("Does it work? \(myService.testValue)")
     }
 }
 
-// 4. Small test.
-
-// 4.1 Create scopes
 Scope.create()
 
-// 4.1 Initialize example class and run it
-let coordinator = CoolCoordinator()
-coordinator.useContainer()
+let controller = MyController()
+controller.testInjection()
+
+class DeferredInitialization {
+    @InjectedWithSetup
+    var myService: MyService!
+
+    init() {
+        _myService.setup { container in
+            let result = MyServiceImplementation()
+            result.testValue = "It will work here as well. :-)"
+            return result
+        }
+    }
+
+    func testInjection() {
+        print("Does it work? \(myService.testValue)")
+    }
+}
+
+let deferred = DeferredInitialization()
+deferred.testInjection()

@@ -14,7 +14,7 @@ protocol MyService {
 }
 
 class MyServiceImplementation: MyService {
-    var testValue: String = "It works! Tasty!"
+    var testValue: String = "Yes!"
 }
 
 class MyContainerFactory: SingletonContainerFactory {
@@ -37,9 +37,15 @@ extension Scope {
 class MyController {
     @Injected
     var myService: MyService
+    @Injected
+    var myForceUnwrappedOptionalService: MyService!
+    @Injected
+    var myOptionalService: MyService?
 
     func testInjection() {
         print("Does it work? \(myService.testValue)")
+        print("Does it work force-unwrapped optionally? \(myForceUnwrappedOptionalService.testValue)")
+        print("Does it work optionally? \(myOptionalService?.testValue ?? "NO!")")
     }
 }
 
@@ -55,7 +61,7 @@ class DeferredInitialization {
     init() {
         _myService.setup { container in
             let result = MyServiceImplementation()
-            result.testValue = "It will work here as well. :-)"
+            result.testValue = "Sure. :-)"
             return result
         }
     }

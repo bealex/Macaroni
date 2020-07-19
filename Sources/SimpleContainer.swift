@@ -18,10 +18,12 @@ public class SimpleContainer: Container {
 
     public func register<D>(_ resolver: @escaping () -> D) {
         typeResolvers[key(D.self)] = resolver
+        typeResolvers[key(Optional<D>.self)] = resolver
     }
 
     public func resolve<D>() -> D? {
-        typeResolvers[key(D.self)]?() as? D ?? parent?.resolve()
+        print("... \(key(D.self))")
+        return typeResolvers[key(D.self)]?() as? D ?? parent?.resolve()
     }
 
     private func key<D>(_ type: D.Type) -> String {

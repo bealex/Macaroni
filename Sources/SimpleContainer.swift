@@ -22,8 +22,7 @@ public class SimpleContainer: Container {
     }
 
     public func resolve<D>() -> D? {
-        print("... \(key(D.self))")
-        return typeResolvers[key(D.self)]?() as? D ?? parent?.resolve()
+        typeResolvers[key(D.self)]?() as? D ?? parent?.resolve()
     }
 
     private func key<D>(_ type: D.Type) -> String {

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0263529825B8124400F01648 /* WeakInjected.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0263529725B8124400F01648 /* WeakInjected.swift */; };
+		0263529925B8124400F01648 /* WeakInjected.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0263529725B8124400F01648 /* WeakInjected.swift */; };
 		FA6BD25A24C4820700533BED /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6BD25924C4820700533BED /* main.swift */; };
 		FA91013B24CDB36B00A247B5 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Container.swift */; };
 		FA91013C24CDB36B00A247B5 /* ContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* ContainerFactory.swift */; };
@@ -38,6 +40,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0263529725B8124400F01648 /* WeakInjected.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeakInjected.swift; sourceTree = "<group>"; };
 		FA6BD25724C4820700533BED /* ExampleAndTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ExampleAndTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA6BD25924C4820700533BED /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		FA91014624CDB36B00A247B5 /* Macaroni.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Macaroni.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -95,6 +98,7 @@
 				OBJ_11 /* Container.swift */,
 				OBJ_12 /* ContainerFactory.swift */,
 				OBJ_13 /* Injected.swift */,
+				0263529725B8124400F01648 /* WeakInjected.swift */,
 				OBJ_14 /* InjectedWithSetup.swift */,
 				OBJ_15 /* Scope.swift */,
 				OBJ_16 /* SimpleContainer.swift */,
@@ -254,6 +258,7 @@
 				FA91013B24CDB36B00A247B5 /* Container.swift in Sources */,
 				FA91013C24CDB36B00A247B5 /* ContainerFactory.swift in Sources */,
 				FA91013D24CDB36B00A247B5 /* Injected.swift in Sources */,
+				0263529925B8124400F01648 /* WeakInjected.swift in Sources */,
 				FA91013E24CDB36B00A247B5 /* InjectedWithSetup.swift in Sources */,
 				FA91013F24CDB36B00A247B5 /* Scope.swift in Sources */,
 				FA91014024CDB36B00A247B5 /* SimpleContainer.swift in Sources */,
@@ -268,6 +273,7 @@
 				OBJ_39 /* Container.swift in Sources */,
 				OBJ_40 /* ContainerFactory.swift in Sources */,
 				OBJ_41 /* Injected.swift in Sources */,
+				0263529825B8124400F01648 /* WeakInjected.swift in Sources */,
 				OBJ_42 /* InjectedWithSetup.swift in Sources */,
 				OBJ_43 /* Scope.swift in Sources */,
 				OBJ_44 /* SimpleContainer.swift in Sources */,

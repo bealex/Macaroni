@@ -30,7 +30,7 @@ extension Scope {
     static let application = Scope(factory: MyContainerFactory())
 
     static func create() {
-        self.default = application
+        `default` = application
     }
 }
 

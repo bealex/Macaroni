@@ -9,6 +9,7 @@
 
 public protocol Container {
     func resolve<D>() -> D?
+    func resolve<D>(parameter: Any) -> D?
 }
 
 public extension Container {

@@ -26,12 +26,16 @@ public class SimpleContainer: Container {
 
     public func register<D>(_ resolver: @escaping () -> D) {
         typeResolvers[key(D.self)] = resolver
-        typeResolvers[key(Optional<D>.self)] = resolver
+        if typeResolvers[key(Optional<D>.self)] == nil {
+            typeResolvers[key(Optional<D>.self)] = resolver
+        }
     }
 
     public func register<D>(_ resolver: @escaping (_: Any) -> D) {
         typeParametrizedResolvers[key(D.self)] = resolver
-        typeParametrizedResolvers[key(Optional<D>.self)] = resolver
+        if typeParametrizedResolvers[key(Optional<D>.self)] == nil {
+            typeParametrizedResolvers[key(Optional<D>.self)] = resolver
+        }
     }
 
     public func resolve<D>() throws -> D? {

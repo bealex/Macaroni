@@ -14,7 +14,7 @@ protocol MyService {
 }
 
 class MyServiceImplementation: MyService {
-    var testValue: String = "Yes!"
+    var testValue: String = "Yes Service!"
 }
 
 class MyContainerFactory: SingletonContainerFactory {
@@ -22,6 +22,8 @@ class MyContainerFactory: SingletonContainerFactory {
         let container = SimpleContainer()
         let myService = MyServiceImplementation()
         container.register { () -> MyService in myService }
+        container.register { () -> String? in nil }
+        container.register { () -> String in "Yes String!" }
         return container
     }
 }
@@ -41,11 +43,17 @@ class MyController {
     var myForceUnwrappedOptionalService: MyService!
     @Injected
     var myOptionalService: MyService?
+    @Injected
+    var myString: String
+    @Injected
+    var myOptionalString: String?
 
     func testInjection() {
         print("Does it work? \(myService.testValue)")
         print("Does it work force-unwrapped optionally? \(myForceUnwrappedOptionalService.testValue)")
         print("Does it work optionally? \(myOptionalService?.testValue ?? "NO!")")
+        print("Does it work with string (optional string is nearby)? \(myString)")
+        print("Does it work optionally with `nil` in container? \(myOptionalString ?? "Yes!")")
     }
 }
 

@@ -53,23 +53,3 @@ Scope.create()
 
 let controller = MyController()
 controller.testInjection()
-
-class DeferredInitialization {
-    @InjectedWithSetup
-    var myService: MyService!
-
-    init() {
-        _myService.setup { container in
-            let result = MyServiceImplementation()
-            result.testValue = "Sure. :-)"
-            return result
-        }
-    }
-
-    func testInjection() {
-        print("Does it work? \(myService.testValue)")
-    }
-}
-
-let deferred = DeferredInitialization()
-deferred.testInjection()

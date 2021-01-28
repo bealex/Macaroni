@@ -48,14 +48,13 @@ public struct Injected<T> {
                     enclosingValue.storage = value
                     return value
                 } else {
-                    if let value: T = container.resolve(parameter: instance) ?? container.resolve() {
-                        print("--> \(String(describing: type(of: value)))")
+                    if let value: T = (try? container.resolve(parameter: instance)) ?? (try? container.resolve()) {
                         enclosingValue.storage = value
                         return value
                     } else {
                         let valueType = String(describing: T.self)
                         let enclosingType = String(describing: type(of: instance))
-                        fatalError("Can't inject value of type \(valueType) into object of type \(enclosingType)")
+                        fatalError("Can't inject value of type \"\(valueType)\" into object of type \"\(enclosingType)\"")
                     }
                 }
             }

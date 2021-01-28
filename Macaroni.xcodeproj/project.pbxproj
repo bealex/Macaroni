@@ -11,7 +11,6 @@
 		FA91013B24CDB36B00A247B5 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Container.swift */; };
 		FA91013C24CDB36B00A247B5 /* ContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* ContainerFactory.swift */; };
 		FA91013D24CDB36B00A247B5 /* Injected.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* Injected.swift */; };
-		FA91013E24CDB36B00A247B5 /* InjectedWithSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_14 /* InjectedWithSetup.swift */; };
 		FA91013F24CDB36B00A247B5 /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_15 /* Scope.swift */; };
 		FA91014024CDB36B00A247B5 /* SimpleContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_16 /* SimpleContainer.swift */; };
 		FA91014124CDB36B00A247B5 /* SingletonContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_17 /* SingletonContainerFactory.swift */; };
@@ -19,7 +18,6 @@
 		OBJ_39 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Container.swift */; };
 		OBJ_40 /* ContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* ContainerFactory.swift */; };
 		OBJ_41 /* Injected.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* Injected.swift */; };
-		OBJ_42 /* InjectedWithSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_14 /* InjectedWithSetup.swift */; };
 		OBJ_43 /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_15 /* Scope.swift */; };
 		OBJ_44 /* SimpleContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_16 /* SimpleContainer.swift */; };
 		OBJ_45 /* SingletonContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_17 /* SingletonContainerFactory.swift */; };
@@ -45,7 +43,6 @@
 		OBJ_11 /* Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Container.swift; sourceTree = "<group>"; };
 		OBJ_12 /* ContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerFactory.swift; sourceTree = "<group>"; };
 		OBJ_13 /* Injected.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Injected.swift; sourceTree = "<group>"; };
-		OBJ_14 /* InjectedWithSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InjectedWithSetup.swift; sourceTree = "<group>"; };
 		OBJ_15 /* Scope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
 		OBJ_16 /* SimpleContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleContainer.swift; sourceTree = "<group>"; };
 		OBJ_17 /* SingletonContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingletonContainerFactory.swift; sourceTree = "<group>"; };
@@ -95,7 +92,6 @@
 				OBJ_11 /* Container.swift */,
 				OBJ_12 /* ContainerFactory.swift */,
 				OBJ_13 /* Injected.swift */,
-				OBJ_14 /* InjectedWithSetup.swift */,
 				OBJ_15 /* Scope.swift */,
 				OBJ_16 /* SimpleContainer.swift */,
 				OBJ_17 /* SingletonContainerFactory.swift */,
@@ -254,7 +250,6 @@
 				FA91013B24CDB36B00A247B5 /* Container.swift in Sources */,
 				FA91013C24CDB36B00A247B5 /* ContainerFactory.swift in Sources */,
 				FA91013D24CDB36B00A247B5 /* Injected.swift in Sources */,
-				FA91013E24CDB36B00A247B5 /* InjectedWithSetup.swift in Sources */,
 				FA91013F24CDB36B00A247B5 /* Scope.swift in Sources */,
 				FA91014024CDB36B00A247B5 /* SimpleContainer.swift in Sources */,
 				FA91014124CDB36B00A247B5 /* SingletonContainerFactory.swift in Sources */,
@@ -268,7 +263,6 @@
 				OBJ_39 /* Container.swift in Sources */,
 				OBJ_40 /* ContainerFactory.swift in Sources */,
 				OBJ_41 /* Injected.swift in Sources */,
-				OBJ_42 /* InjectedWithSetup.swift in Sources */,
 				OBJ_43 /* Scope.swift in Sources */,
 				OBJ_44 /* SimpleContainer.swift in Sources */,
 				OBJ_45 /* SingletonContainerFactory.swift in Sources */,

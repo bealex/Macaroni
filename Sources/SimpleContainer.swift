@@ -14,7 +14,9 @@ public class SimpleContainer: Container {
         parent = parentContainer
     }
 
-    /// Resolvers that can create object by type.
+    /**
+        Resolvers that can create object by type.
+     */
     private var typeResolvers: [String: () -> Any] = [:]
     /**
         Resolvers that can create object, based on type and some arbitrary parameter.
@@ -32,12 +34,20 @@ public class SimpleContainer: Container {
         typeParametrizedResolvers[key(Optional<D>.self)] = resolver
     }
 
-    public func resolve<D>() -> D? {
-        typeResolvers[key(D.self)]?() as? D ?? parent?.resolve()
+    public func resolve<D>() throws -> D? {
+        if let resolver = typeResolvers[key(D.self)] {
+            return try resolver() as? D ?? parent?.resolve()
+        } else {
+            throw ContainerError.noResolver
+        }
     }
 
-    public func resolve<D>(parameter: Any) -> D? {
-        typeParametrizedResolvers[key(D.self)]?(parameter) as? D ?? parent?.resolve()
+    public func resolve<D>(parameter: Any) throws -> D? {
+        if let resolver = typeParametrizedResolvers[key(D.self)] {
+            return try resolver(parameter) as? D ?? parent?.resolve(parameter: parameter)
+        } else {
+            throw ContainerError.noResolver
+        }
     }
 
     private func key<D>(_ type: D.Type) -> String {

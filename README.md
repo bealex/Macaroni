@@ -5,7 +5,9 @@ Swift Dependency Injection Framework "Macaroni".
 
 When I start my projects, I need some kind of DI. When [property wrappers](https://github.com/apple/swift-evolution/blob/master/proposals/0258-property-wrappers.md) were introduced, it was obvious that this feature can be used for DI framework. So here it is.
 
-There is a serious limitation in current property wrappers. They can't access enclosing `self` in a wrapper type (this is noted as future direction in the proposal). This is why we need a parameter that shows to a wrapper what container to use for the injection. Other than that it is a very simple library.
+There was a serious limitation in current property wrappers and in Macaroni v.1. They can't access enclosing `self` in a wrapper type (this is noted as future direction in the proposal). This is why we need a parameter that shows to a wrapper what container to use for the injection. Other than that it is a very simple library.
+
+Macaroni v.2 does not have this limitation. Using a hack from this article https://www.swiftbysundell.com/articles/accessing-a-swift-property-wrappers-enclosing-instance/ and some resolving restructuring it is currently possible to inject objects that are being initialized during first access and are able to access `self` of the enclosing object. There is another limitation because of that: @Injected can be used only in classes. Properties are being updated/modified while access and because of that they need to use reference semantics.
 
 # Simple example
 
@@ -84,26 +86,11 @@ Please note that all these properties are read-only.
 
 If you need to use enclosing type information during object injection, you can use another `@Injected` option:
 
+TODO: REVIEW THIS FEATURE
+
 ```swift
 class MyController {
     @Injected({ createMyObjectFromContainer($0) })
     var myObject: MyObject
 }
 ```
-
-If you need to use enclosing instance there, only thing you can do is lazy initialization. It is called `@InjectedWithSetup`. And at some point in the future you have to call setup for the property.
-
-```swift
-class MyController {
-    @InjectedWithSetup
-    var myObject: MyObject
-
-    init() {
-        ...
-        // we have to use underscore to call wrapper, not value itself
-        _myObject.setup { container in
-            createMyObjectFromContanerUsingSelf($0) 
-        }
-    }
-}
-``` 

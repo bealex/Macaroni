@@ -23,7 +23,7 @@ class MyContainerFactory: SingletonContainerFactory {
         let myService = MyServiceImplementation()
         container.register { () -> MyService in myService }
         container.register { () -> String? in nil }
-        container.register { () -> String in "Yes String!" }
+        container.register { (_ parameter: Any) -> String in "Yes! You've injected me into \(String(describing: type(of: parameter)))" }
         return container
     }
 }
@@ -44,7 +44,7 @@ class MyController {
     @Injected
     var myOptionalService: MyService?
     @Injected
-    var myString: String
+    var myStringInitializingAfterInit: String
     @Injected
     var myOptionalString: String?
 
@@ -52,7 +52,7 @@ class MyController {
         print("Does it work? \(myService.testValue)")
         print("Does it work force-unwrapped optionally? \(myForceUnwrappedOptionalService.testValue)")
         print("Does it work optionally? \(myOptionalService?.testValue ?? "NO!")")
-        print("Does it work with string (optional string is nearby)? \(myString)")
+        print("Can it use enclosed object? \(myStringInitializingAfterInit)")
         print("Does it work optionally with `nil` in container? \(myOptionalString ?? "Yes!")")
     }
 }

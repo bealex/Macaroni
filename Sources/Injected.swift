@@ -16,16 +16,9 @@ public struct Injected<T> {
     }
 
     private let scope: Scope
-    private let initializer: ((Container) -> T)?
 
     public init(from scope: Scope = Scope.default) {
         self.scope = scope
-        initializer = nil
-    }
-
-    public init(from scope: Scope = Scope.default, _ initializer: @escaping (Container) -> T) {
-        self.scope = scope
-        self.initializer = initializer
     }
 
     // MARK: - Parametrized option
@@ -43,19 +36,13 @@ public struct Injected<T> {
                 return value
             } else {
                 let container = enclosingValue.scope.container
-                if let initializer = enclosingValue.initializer {
-                    let value = initializer(container)
+                if let value: T = (try? container.resolve(parameter: instance)) ?? (try? container.resolve()) {
                     enclosingValue.storage = value
                     return value
                 } else {
-                    if let value: T = (try? container.resolve(parameter: instance)) ?? (try? container.resolve()) {
-                        enclosingValue.storage = value
-                        return value
-                    } else {
-                        let valueType = String(describing: T.self)
-                        let enclosingType = String(describing: type(of: instance))
-                        fatalError("Can't inject value of type \"\(valueType)\" into object of type \"\(enclosingType)\"")
-                    }
+                    let valueType = String(describing: T.self)
+                    let enclosingType = String(describing: type(of: instance))
+                    fatalError("Can't inject value of type \"\(valueType)\" into object of type \"\(enclosingType)\"")
                 }
             }
         }

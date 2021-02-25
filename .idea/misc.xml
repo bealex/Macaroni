@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="CidrRootsConfiguration">
+    <sourceRoots>
+      <file path="$PROJECT_DIR$/Tests" />
+    </sourceRoots>
+  </component>
   <component name="SwiftPackageManagerSettings">
     <option name="linkedExternalProjectsSettings">
       <SwiftPackageManagerProjectSettings>
@@ -12,4 +17,5 @@
       </SwiftPackageManagerProjectSettings>
     </option>
   </component>
+  <component name="SwiftPackageManagerWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
 </project>

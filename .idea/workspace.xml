@@ -5,24 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67c8fe92-9564-487d-aeff-272ca2c3a5ed" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Tests/LinuxMain.swift" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleTests.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Macaroni.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Macaroni.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/ExampleAndTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/Macaroni_iOS.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/xcode.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Macaroni.xcodeproj/project.pbxproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Macaroni.xcodeproj/project.xcworkspace/contents.xcworkspacedata" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Macaroni.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Macaroni.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Macaroni.xcodeproj/xcshareddata/xcschemes/ExampleAndTest.xcscheme" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Macaroni.xcodeproj/xcshareddata/xcschemes/Macaroni iOS.xcscheme" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Package.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Package.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Sources/Container.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Sources/Container.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Sources/Injected.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Sources/Injected.swift" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerWithParameterTests.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleTests.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerTests.swift" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,9 +38,13 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
     <property name="cidr.known.project.marker" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Tests/MacaroniTests" />
     <property name="settings.editor.selected.configurable" value="XcodeSettings" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Tests/MacaroniTests" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/Tests/MacaroniTests/" />
       <recent name="$PROJECT_DIR$/Tests/" />
@@ -70,4 +59,10 @@
     </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="Removed xcodeproj, added simple test (more tests TBD)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed xcodeproj, added simple test (more tests TBD)" />
+  </component>
 </project>

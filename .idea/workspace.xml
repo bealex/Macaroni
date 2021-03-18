@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67c8fe92-9564-487d-aeff-272ca2c3a5ed" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerWithParameterTests.swift" afterDir="false" />
+    <list default="true" id="67c8fe92-9564-487d-aeff-272ca2c3a5ed" name="Default Changelist" comment="Tests are better structured.">
+      <change afterPath="$PROJECT_DIR$/Tests/MacaroniTests/ParentContainerTests.swift" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleTests.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerTests.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sources/SimpleContainer.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Sources/SimpleContainer.swift" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,19 +50,35 @@
       <recent name="$PROJECT_DIR$/Tests/" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Swift Package Test.MacaroniTests">
     <configuration name="MacaroniTests" type="SwiftPackageManagerTestRunConfiguration" factoryName="Swift Package Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Macaroni" TARGET_NAME="MacaroniTests" CONFIG_NAME="MacaroniTests" RUN_TARGET_PROJECT_NAME="Macaroni" RUN_TARGET_NAME="MacaroniTests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="SPM.BUILD_TASK_PROVIDER" enabled="true" />
         <option name="BeforeTestRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="ParentContainerTests.testSimpleRegistration" type="SwiftPackageManagerTestRunConfiguration" factoryName="Swift Package Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Macaroni" TARGET_NAME="MacaroniTests" CONFIG_NAME="Swift Package Run" RUN_TARGET_PROJECT_NAME="Macaroni" RUN_TARGET_NAME="MacaroniTests" TEST_CLASS="ParentContainerTests" TEST_METHOD="testSimpleRegistration" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="SPM.BUILD_TASK_PROVIDER" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Swift Package Test.MacaroniTests" />
+      <item itemvalue="Swift Package Test.ParentContainerTests.testSimpleRegistration" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Swift Package Test.ParentContainerTests.testSimpleRegistration" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="Removed xcodeproj, added simple test (more tests TBD)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed xcodeproj, added simple test (more tests TBD)" />
+    <MESSAGE value="Tests are better structured." />
+    <option name="LAST_COMMIT_MESSAGE" value="Tests are better structured." />
   </component>
 </project>

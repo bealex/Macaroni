@@ -44,7 +44,7 @@ public class SimpleContainer: Container {
         if let resolver = typeResolvers[key(D.self)] {
             return try resolver() as? D ?? parent?.resolve()
         } else {
-            throw ContainerError.noResolver
+            return try parent?.resolve()
         }
     }
 
@@ -52,7 +52,7 @@ public class SimpleContainer: Container {
         if let resolver = typeParametrizedResolvers[key(D.self)] {
             return try resolver(parameter) as? D ?? parent?.resolve(parameter: parameter)
         } else {
-            throw ContainerError.noResolver
+            return try parent?.resolve(parameter: parameter)
         }
     }
 

@@ -4,10 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67c8fe92-9564-487d-aeff-272ca2c3a5ed" name="Default Changelist" comment="Tests are better structured.">
-      <change afterPath="$PROJECT_DIR$/Tests/MacaroniTests/ParentContainerTests.swift" afterDir="false" />
+    <list default="true" id="67c8fe92-9564-487d-aeff-272ca2c3a5ed" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/csv-plugin.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Sources/ContainerSelector.swift" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Tests/MacaroniTests/ContainerSelectorTests.swift" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Tests/MacaroniTests/InjectedTests.swift" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Sources/SimpleContainer.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Sources/SimpleContainer.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Example/main.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sources/Container.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Sources/Container.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sources/ContainerFactory.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sources/Injected.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Sources/Injected.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sources/Scope.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sources/SimpleContainer.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sources/SingletonContainerFactory.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/MacaroniTests/ParentContainerTests.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/MacaroniTests/ParentContainerTests.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerTests.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerTests.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerWithParameterTests.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerWithParameterTests.swift" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +49,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="cidr.known.project.marker" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/Tests/MacaroniTests" />
     <property name="settings.editor.selected.configurable" value="XcodeSettings" />
@@ -51,6 +64,18 @@
     </key>
   </component>
   <component name="RunManager" selected="Swift Package Test.MacaroniTests">
+    <configuration name="ContainerSelectorTests" type="SwiftPackageManagerTestRunConfiguration" factoryName="Swift Package Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Macaroni" TARGET_NAME="MacaroniTests" CONFIG_NAME="Swift Package Run" RUN_TARGET_PROJECT_NAME="Macaroni" RUN_TARGET_NAME="MacaroniTests" TEST_CLASS="ContainerSelectorTests" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="SPM.BUILD_TASK_PROVIDER" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="InjectedTests" type="SwiftPackageManagerTestRunConfiguration" factoryName="Swift Package Test" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Macaroni" TARGET_NAME="MacaroniTests" CONFIG_NAME="Swift Package Run" RUN_TARGET_PROJECT_NAME="Macaroni" RUN_TARGET_NAME="MacaroniTests" TEST_CLASS="InjectedTests" TEST_MODE="SUITE_TEST">
+      <method v="2">
+        <option name="SPM.BUILD_TASK_PROVIDER" enabled="true" />
+        <option name="BeforeTestRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="MacaroniTests" type="SwiftPackageManagerTestRunConfiguration" factoryName="Swift Package Test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Macaroni" TARGET_NAME="MacaroniTests" CONFIG_NAME="MacaroniTests" RUN_TARGET_PROJECT_NAME="Macaroni" RUN_TARGET_NAME="MacaroniTests" TEST_MODE="SUITE_TEST">
       <method v="2">
         <option name="SPM.BUILD_TASK_PROVIDER" enabled="true" />
@@ -66,19 +91,36 @@
     <list>
       <item itemvalue="Swift Package Test.MacaroniTests" />
       <item itemvalue="Swift Package Test.ParentContainerTests.testSimpleRegistration" />
+      <item itemvalue="Swift Package Test.InjectedTests" />
+      <item itemvalue="Swift Package Test.ContainerSelectorTests" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Swift Package Test.ContainerSelectorTests" />
+        <item itemvalue="Swift Package Test.InjectedTests" />
         <item itemvalue="Swift Package Test.ParentContainerTests.testSimpleRegistration" />
       </list>
     </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="Removed xcodeproj, added simple test (more tests TBD)" />
     <MESSAGE value="Tests are better structured." />
-    <option name="LAST_COMMIT_MESSAGE" value="Tests are better structured." />
+    <MESSAGE value="Fixed problem with parent container resolve. Added parent container test." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed problem with parent container resolve. Added parent container test." />
   </component>
 </project>

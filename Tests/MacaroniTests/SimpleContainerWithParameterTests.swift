@@ -10,12 +10,12 @@ class SimpleContainerWithParameterTests: XCTestCase {
         }
     }
 
-    private var container: SimpleContainer!
+    private var container: Container!
 
     override func setUp() {
         super.setUp()
 
-        container = SimpleContainer()
+        container = Container()
         container.register { (control: Any) -> TestInjectedType in
             guard let control = control as? Int else { fatalError("Ouch") }
             return TestInjectedType(control: control)

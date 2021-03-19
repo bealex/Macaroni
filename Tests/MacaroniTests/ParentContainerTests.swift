@@ -5,17 +5,16 @@ class ParentContainerTests: XCTestCase {
     private class TestInjectedType {}
 
     private var controlValue: Int!
-    private var container: SimpleContainer!
-    private var childContainer: SimpleContainer!
+    private var childContainer: Container!
 
     override func setUp() {
         super.setUp()
 
-        container = SimpleContainer()
+        let container = Container()
         controlValue = Int.random(in: Int.min ... Int.max)
         container.register { TestInjectedType() }
 
-        childContainer = SimpleContainer(parentContainer: container)
+        childContainer = Container(parent: container)
     }
 
     func testSimpleRegistration() throws {

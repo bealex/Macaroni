@@ -13,12 +13,60 @@ public enum ContainerError: Error {
 }
 
 /// Dependency injection container, that can create objects from their type.
-public protocol Container {
+public class Container {
+    private let parent: Container?
+
+    public init(parent: Container? = nil) {
+        self.parent = parent
+    }
+
+    /// Resolvers that can create object by type.
+    private var singletonTypeResolvers: [String: () -> Any] = [:]
+    /// Resolvers that can create object, based on type and some arbitrary parameter. What is this parameter, depends on the usage.
+    private var singletonTypeParametrizedResolvers: [String: (_ parameter: Any) -> Any] = [:]
+
     /// Returns instance of type `D`, if it is registered.
-    func resolve<D>() throws -> D?
+    public func resolve<D>() throws -> D? {
+        if let resolver = singletonTypeResolvers[key(D.self)] {
+            return resolver() as? D
+        } else if let parent = parent {
+            return try parent.resolve()
+        } else {
+            throw ContainerError.noResolver
+        }
+    }
+
     /// Returns instance of type `D`, if it is registered. Sends `parameter` to the resolver.
     /// For example, parameter can be a class name that encloses value that needs to be injected.
-    func resolve<D>(parameter: Any) throws -> D?
+    public func resolve<D>(parameter: Any) throws -> D? {
+        if let resolver = singletonTypeParametrizedResolvers[key(D.self)] {
+            return try resolver(parameter) as? D ?? parent?.resolve(parameter: parameter)
+        } else if let parent = parent {
+            return try parent.resolve(parameter: parameter)
+        } else {
+            throw ContainerError.noResolver
+        }
+    }
+
+    public func register<D>(_ resolver: @escaping () -> D) {
+        singletonTypeResolvers[key(D.self)] = resolver
+        let optionalKey = key(Optional<D>.self)
+        if singletonTypeResolvers[optionalKey] == nil && singletonTypeParametrizedResolvers[optionalKey] == nil {
+            singletonTypeResolvers[optionalKey] = resolver
+        }
+    }
+
+    public func register<D>(_ resolver: @escaping (_: Any) -> D) {
+        singletonTypeParametrizedResolvers[key(D.self)] = resolver
+        let optionalKey = key(Optional<D>.self)
+        if singletonTypeResolvers[optionalKey] == nil && singletonTypeParametrizedResolvers[optionalKey] == nil {
+            singletonTypeParametrizedResolvers[key(Optional<D>.self)] = resolver
+        }
+    }
+
+    private func key<D>(_ type: D.Type) -> String {
+        String(reflecting: type)
+    }
 }
 
 public extension Container {

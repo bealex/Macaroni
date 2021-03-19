@@ -15,10 +15,7 @@ public struct Injected<T> {
         set { fatalError("Injecting only works for class enclosing types") }
     }
 
-    private let scope: Scope
-
-    public init(from scope: Scope = Scope.default) {
-        self.scope = scope
+    public init() {
     }
 
     // MARK: - Parametrized option
@@ -35,7 +32,7 @@ public struct Injected<T> {
             if let value = enclosingValue.storage {
                 return value
             } else {
-                let container = enclosingValue.scope.container
+                let container = ContainerSelector.for(instance)
                 if let value: T = (try? container.resolve(parameter: instance)) ?? (try? container.resolve()) {
                     enclosingValue.storage = value
                     return value

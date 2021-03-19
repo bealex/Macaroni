@@ -5,12 +5,12 @@ class SimpleContainerTests: XCTestCase {
     private class TestInjectedType {}
 
     private var controlValue: Int!
-    private var container: SimpleContainer!
+    private var container: Container!
 
     override func setUp() {
         super.setUp()
 
-        container = SimpleContainer()
+        container = Container()
         controlValue = Int.random(in: Int.min ... Int.max)
         container.register { TestInjectedType() }
     }

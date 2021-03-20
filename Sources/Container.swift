@@ -48,6 +48,7 @@ public class Container {
         }
     }
 
+    /// Registers resolving closure for type `D`.
     public func register<D>(_ resolver: @escaping () -> D) {
         singletonTypeResolvers[key(D.self)] = resolver
         let optionalKey = key(Optional<D>.self)
@@ -56,6 +57,7 @@ public class Container {
         }
     }
 
+    /// Registers resolving closure with parameter for type `D`. `@Injected` annotation sends enclosing object as a parameter.
     public func register<D>(_ resolver: @escaping (_: Any) -> D) {
         singletonTypeParametrizedResolvers[key(D.self)] = resolver
         let optionalKey = key(Optional<D>.self)

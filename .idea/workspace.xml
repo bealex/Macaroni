@@ -5,21 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67c8fe92-9564-487d-aeff-272ca2c3a5ed" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/csv-plugin.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Sources/ContainerSelector.swift" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Tests/MacaroniTests/ContainerSelectorTests.swift" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Tests/MacaroniTests/InjectedTests.swift" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Sources/Macaroni.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/csv-plugin.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/csv-plugin.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Example/main.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Sources/Container.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Sources/Container.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Sources/ContainerFactory.swift" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Sources/Injected.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Sources/Injected.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Sources/Scope.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Sources/SimpleContainer.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Sources/SingletonContainerFactory.swift" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/MacaroniTests/ParentContainerTests.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/MacaroniTests/ParentContainerTests.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerTests.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerTests.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerWithParameterTests.swift" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/MacaroniTests/SimpleContainerWithParameterTests.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/LinuxMain.swift" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

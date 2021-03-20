@@ -10,15 +10,13 @@
 @propertyWrapper
 public struct Injected<T> {
     public var wrappedValue: T {
-        get { fatalError("Injecting only works for class enclosing types") }
+        get { Macaroni.handleError("Injecting only works for class enclosing types") }
         // We need setter here so that KeyPaths in subscript were writable.
-        set { fatalError("Injecting only works for class enclosing types") }
+        set { Macaroni.handleError("Injecting only works for class enclosing types") }
     }
 
     public init() {
     }
-
-    // MARK: - Parametrized option
 
     private var storage: T?
 
@@ -39,12 +37,10 @@ public struct Injected<T> {
                 } else {
                     let valueType = String(describing: T.self)
                     let enclosingType = String(describing: type(of: instance))
-                    fatalError("Can't inject value of type \"\(valueType)\" into object of type \"\(enclosingType)\"")
+                    Macaroni.handleError("Can't inject value of type \"\(valueType)\" into object of type \"\(enclosingType)\"")
                 }
             }
         }
-        set {
-            // compiler needs this. We do not.
-        }
+        set { /* compiler needs this. We do not. */ }
     }
 }

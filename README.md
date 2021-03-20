@@ -5,13 +5,11 @@ Swift Dependency Injection Framework "Macaroni".
 
 When I start my projects, I need some kind of DI. When [property wrappers](https://github.com/apple/swift-evolution/blob/master/proposals/0258-property-wrappers.md) were introduced, it was obvious that this feature can be used for DI framework. So here it is.
 
-There was a serious limitation in current property wrappers and in Macaroni v.1. They can't access enclosing `self` in a wrapper type (this is noted as future direction in the proposal). This is why we need a parameter that shows to a wrapper what container to use for the injection. Other than that it is a very simple library.
+Macaroni v.2 uses a hack from this article https://www.swiftbysundell.com/articles/accessing-a-swift-property-wrappers-enclosing-instance/ to be able to access `self` of the enclosing object. There is a limitation because of that: @Injected can be used _only in classes_, because properties are being lazy initialized when accessed first time.
 
-Macaroni v.2 does not have this limitation. Using a hack from this article https://www.swiftbysundell.com/articles/accessing-a-swift-property-wrappers-enclosing-instance/ and some resolving restructuring it is currently possible to inject objects that are being initialized during first access and are able to access `self` of the enclosing object. There is another limitation because of that: @Injected can be used only in classes. Properties are being updated/modified while access and because of that they need to use reference semantics.
+## Simple example
 
-# Simple example
-
-First let's import Macaroni and prepare our protocol (We'll use it in all examples)
+First let's import Macaroni and prepare our protocol.
 
 ```swift
 import Macaroni
@@ -20,77 +18,92 @@ protocol MyService {}
 class MyServiceImplementation: MyService {}
 ```
 
-Now we can create a container factory. Container is a box that holds all injected objects. Container can be created once (this is what SingletonContainer for), or you can implement your own logic.
-
-During factory creation we create all the objects. Then register them in the container. 
+Now let's register the service inside a DI container (`Macaroni.Container`). Think of Container as a box that holds all objects for injection.
 
 ```swift
-class MyContainerFactory: SingletonContainerFactory {
-    override func build() -> Container {
-        let container = SimpleContainer()
-        let myService = MyServiceImplementation()
-        container.register { () -> MyService in myService }
-        return container
-    }
+func configure() {
+    let container = ContainerSelector.defaultContainer
+    
+    // This variant will create singleton resolver.
+    let myService = MyServiceImplementation()
+    container.register { myService }
+    
+    // If you want object to be created every time, you can use it like this:
+    container.register { MyServiceImplementation() }
 }
 ```
 
-Now we have to create Scope. It is a container factory holder, that will create container if needed and use it to inject from it.
+Please note that type of myService is inferred. This is why it will be able to inject it as `MyServiceImplementation`, but not `MyService`. To enable the latter, you should specify it either at declaration
 
 ```swift
-let myScope = Scope(factory: MyContainerFactory())
+let myService: MyService = MyServiceImplementation()
 ```
 
-And, finally, we can inject things!
+Or diring the registration:
 
 ```swift
-class MyController {
-    @Injected(from: myScope)
-    var myService: MyService
-}
-``` 
+container.register { () -> MyService in myService }
+```
 
-# More simple and tricky things
-
-If you have a single container in your application, you can simplify this. There is the default place, where Macaroni looks for the Scope. It is called `Scope.default`. If you save your scope there, you can omit scope parameter in `@Injected` like this. 
+Now we can inject things!
 
 ```swift
-Scope.default = myScope
-
 class MyController {
     @Injected
     var myService: MyService
 }
-```
+``` 
 
-You can also create several scopes and use them where needed.
+## Using information about enclosing object
 
-```swift
-extension Scope {
-    static let application = Scope(factory: ApplicationContainerFactory())
-    static let flow = Scope(factory: FlowContainerFactory())
-}
-
-class ApplicationLevelObject {
-    @Injected(from: .application)
-    var myService: MyService
-}
-
-class FlowLevelObject {
-    @Injected(from: .flow)
-    var myService: MyService
-}
-```
-
-Please note that all these properties are read-only.
-
-If you need to use enclosing type information during object injection, you can use another `@Injected` option:
-
-TODO: REVIEW THIS FEATURE
+If you need to use object that contains injected property, you can get it inside registration closure like this:
 
 ```swift
-class MyController {
-    @Injected({ createMyObjectFromContainer($0) })
-    var myObject: MyObject
+container.register { (enclosing: Any) -> String in String(describing: enclosing) }
+```
+
+## `@Injected` resolve procedure
+                                             
+If there is no value stored for the field, then it is created:
+ - First, it looks for the parametrized resolver
+ - Next, non-parametrized resolver
+ - If nothing found, fatal error happens. You can override this behavior with the property: `Macaroni.handleError`
+   
+If you will simultaneously register parametrized type resolver with non-parametrized one, parametrized will take precedence. You can see all logic in `struct Injected`.
+
+## Several containers
+
+You can use several containers inside your app. Which container will be used during the injection is defined by `ContainerSelector.for(_ enclosedObject: Any)` closure. By default it uses `defaultContainer` for all injections.
+
+For example, you can use serviceContainer for all your service layer objects, uiContainer for different UI classes and `defaultContainer` for everything else. How to implement this is totally up to you. I use marker protocols for this:
+
+```swift
+// Define marker protocols:
+protocol ServiceLayer {}
+protocol PresentationLayer {}
+
+// They can be used like this:
+class SomeServiceImplementation: SomeService, ServiceLayer {
+    @Injected
+    private var somethingFromServiceContainer: Something
+}
+
+class SomeScreenFlow: SomeService, PresentationLayer {
+    @Injected
+    private var somethingForUIOnly: Something
+}
+
+// Somewhere before classes creation:
+let serviceContainer = Container(parent: ContainerSelector.defaultContainer)
+let presentationContainer = Container(parent: serviceContainer)
+
+ContainerSelector.for = { enclosedObject in
+    switch enclosedObject {
+        case is ServiceLayer: return serviceContainer
+        case is PresentationLayer: return presentationContainer
+        default: return ContainerSelector.defaultContainer
+    }
 }
 ```
+
+This is one of the ways to do that. Feel free to use anything you need.

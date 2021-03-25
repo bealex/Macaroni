@@ -7,6 +7,9 @@ When I start my projects, I need some kind of DI. When [property wrappers](https
 
 Macaroni v.2 uses a hack from this article https://www.swiftbysundell.com/articles/accessing-a-swift-property-wrappers-enclosing-instance/ to be able to access `self` of the enclosing object. There is a limitation because of that: @Injected can be used _only in classes_, because properties are being lazy initialized when accessed first time.
 
+#### Migration
+ - [from v 1.x to v 2.x](Documentation/Migration 1.x — 2.x.md)
+
 ## Simple example
 
 First let's import Macaroni and prepare our protocol.
@@ -22,24 +25,22 @@ Now let's register the service inside a DI container (`Macaroni.Container`). Thi
 
 ```swift
 func configure() {
-    let container = ContainerSelector.defaultContainer
-    
     // This variant will create singleton resolver.
     let myService = MyServiceImplementation()
-    container.register { myService }
+    ContainerSelector.defaultContainer.register { myService }
     
     // If you want object to be created every time, you can use it like this:
-    container.register { MyServiceImplementation() }
+    ContainerSelector.defaultContainer.register { MyServiceImplementation() }
 }
 ```
 
-Please note that type of myService is inferred. This is why it will be able to inject it as `MyServiceImplementation`, but not `MyService`. To enable the latter, you should specify it either at declaration
+Please note that type of myService is inferred. This is why it will be able to inject it as `MyServiceImplementation`, but not `MyService`. To enable the latter, you should specify it either at declaration:
 
 ```swift
 let myService: MyService = MyServiceImplementation()
 ```
 
-Or diring the registration:
+Or during the registration:
 
 ```swift
 container.register { () -> MyService in myService }
@@ -54,7 +55,7 @@ class MyController {
 }
 ``` 
 
-## Using information about enclosing object
+## Using information about enclosing object (parametrized injection)
 
 If you need to use object that contains injected property, you can get it inside registration closure like this:
 
@@ -73,7 +74,7 @@ If you will simultaneously register parametrized type resolver with non-parametr
 
 ## Several containers
 
-You can use several containers inside your app. Which container will be used during the injection is defined by `ContainerSelector.for(_ enclosedObject: Any)` closure. By default it uses `defaultContainer` for all injections.
+You can use several containers inside your app. Which container will be used during the injection is defined by `ContainerSelector.for(_ enclosedObject: Any)` closure. By default, it uses `defaultContainer` for all injections.
 
 For example, you can use serviceContainer for all your service layer objects, uiContainer for different UI classes and `defaultContainer` for everything else. How to implement this is totally up to you. I use marker protocols for this:
 

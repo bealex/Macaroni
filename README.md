@@ -8,7 +8,7 @@ When I start my projects, I need some kind of DI. When [property wrappers](https
 Macaroni v.2 uses a hack from this article https://www.swiftbysundell.com/articles/accessing-a-swift-property-wrappers-enclosing-instance/ to be able to access `self` of the enclosing object. There is a limitation because of that: @Injected can be used _only in classes_, because properties are being lazy initialized when accessed first time.
 
 #### Migration
- - [from v 1.x to v 2.x](Documentation/Migration 1.x — 2.x.md)
+ - [from v 1.x to v 2.x](Documentation/Migration1-2.md)
 
 ## Simple example
 

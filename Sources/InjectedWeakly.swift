@@ -1,5 +1,5 @@
 //
-// Injected
+// InjectedWeakly
 // Macaroni
 //
 // Created by Alex Babaev on 29 May 2020.
@@ -7,9 +7,10 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/master/LICENSE
 //
 
+/// This wrapper can be used only with classes. You must capture injected object weakly (with [weak object]) in registration closure.
 @propertyWrapper
-public struct Injected<Value> {
-    public var wrappedValue: Value {
+public struct InjectedWeakly<Value> {
+    public var wrappedValue: Value? {
         get { Macaroni.handleError("Injecting only works for class enclosing types") }
         // We need setter here so that KeyPaths in subscript were writable.
         set { Macaroni.handleError("Injecting only works for class enclosing types") }
@@ -18,24 +19,27 @@ public struct Injected<Value> {
     public init() {
     }
 
-    private var storage: Value?
+    weak var storage: AnyObject?
+    private var isResolved: Bool = false
 
     public static subscript<EnclosingType>(
         _enclosingInstance instance: EnclosingType,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingType, Value>,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingType, Value?>,
         storage storageKeyPath: ReferenceWritableKeyPath<EnclosingType, Self>
-    ) -> Value {
+    ) -> Value? {
         get {
             var enclosingValue = instance[keyPath: storageKeyPath]
-            if let value = enclosingValue.storage {
+            if enclosingValue.isResolved, let value = enclosingValue.storage as? Value {
                 return value
             } else {
-                if let value: Value = Container.resolve(for: instance) {
-                    enclosingValue.storage = value
+                if let value: Value? = Container.resolve(for: instance) {
+                    enclosingValue.isResolved = true
+                    enclosingValue.storage = value as AnyObject
                     return value
                 } else {
-                    let valueType = String(describing: Value.self)
-                    Macaroni.handleError("Dependency \"\(valueType)\" is nil")
+                    enclosingValue.isResolved = true
+                    enclosingValue.storage = nil
+                    return nil
                 }
             }
         }

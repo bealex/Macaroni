@@ -44,7 +44,8 @@ extension Container {
                 value = try container.resolve()
             } catch {
                 let valueType = String(describing: Value.self)
-                Macaroni.handleError("Can't find resolver for \"\(valueType)\" type")
+                let enclosingType = String(describing: instance.self)
+                Macaroni.handleError("Can't find resolver for \"\(valueType)\" type in \"\(enclosingType)\" object")
             }
         }
         return value

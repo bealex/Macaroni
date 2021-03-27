@@ -21,7 +21,11 @@ extension Container {
             case .singleton(let container)?:
                 return container
             case .enclosingObjectWithContainer(let defaultSingletonContainer)?:
-                if let container = (instance as? WithContainer)?.container ?? defaultSingletonContainer {
+                if let container = (instance as? WithContainer)?.container {
+                    return container
+                } else if let resolver = instance as? WithContainerResolver {
+                    return resolver.container()
+                } else if let container = defaultSingletonContainer {
                     return container
                 } else {
                     let enclosingType = String(describing: instance.self)

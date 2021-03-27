@@ -12,3 +12,7 @@ import Foundation
 public protocol WithContainer {
     var container: Container! { get }
 }
+
+public protocol WithContainerResolver {
+    var container: () -> Container { get }
+}

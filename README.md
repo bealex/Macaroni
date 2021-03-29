@@ -113,6 +113,10 @@ container.register { [weak service] in service }
 Container.policy = .singleton(container)
 ```
 
+## Per Module Injection
+
+If your application uses several modules and each module 
+
 ## Multithreading support
 
 Macaroni does not do anything about multithreading. Please handle it yourself if needed.

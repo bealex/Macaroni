@@ -21,12 +21,14 @@ public struct InjectedFrom<Value> {
             if let value: Value = try container.resolve() {
                 self.value = value
             } else {
-                let valueType = String(describing: Value.self)
-                Macaroni.handleError("Dependency \"\(valueType)\" is nil")
+                Macaroni.handleError("Dependency \"\(String(describing: Value.self))\" is nil")
             }
         } catch {
-            let valueType = String(describing: Value.self)
-            Macaroni.handleError("Dependency \"\(valueType)\" does not have a resolver")
+            if container.resolvable(Value.self) {
+                Macaroni.handleError("Parametrized resolvers are not supported for @InjectedFrom (\"\(String(describing: Value.self))\").")
+            } else {
+                Macaroni.handleError("Dependency \"\(String(describing: Value.self))\" does not have a resolver")
+            }
         }
     }
 }

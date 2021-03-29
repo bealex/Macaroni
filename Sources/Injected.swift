@@ -34,8 +34,7 @@ public struct Injected<Value> {
                     enclosingValue.storage = value
                     return value
                 } else {
-                    let valueType = String(describing: Value.self)
-                    Macaroni.handleError("Dependency \"\(valueType)\" is nil")
+                    Macaroni.handleError("Dependency \"\(String(describing: Value.self))\" is nil")
                 }
             }
         }

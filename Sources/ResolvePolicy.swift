@@ -28,8 +28,7 @@ extension Container {
                 } else if let container = defaultSingletonContainer {
                     return container
                 } else {
-                    let enclosingType = String(describing: instance.self)
-                    Macaroni.handleError("Can't find container for \(enclosingType)")
+                    Macaroni.handleError("Can't find container for \(String(describing: instance.self))")
                 }
             case .custom(let containerSelector)?:
                 return containerSelector(instance)

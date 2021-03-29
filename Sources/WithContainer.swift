@@ -14,5 +14,5 @@ public protocol WithContainer {
 }
 
 public protocol WithContainerResolver {
-    var container: () -> Container { get }
+    var container: (() -> Container)! { get }
 }

@@ -115,7 +115,28 @@ Container.policy = .singleton(container)
 
 ## Per Module Injection
 
-If your application uses several modules and each module 
+If your application uses several modules and each module needs its own `Container`, you can use this option:
+
+```swift
+// Common code:
+protocol ModuleDI: WithContainer {}
+
+// Using this policy for each object to decide what container to use.  
+Container.policy = .enclosingObjectWithContainer()
+
+// Module specific code:
+// In each module create a container, and fill it with needed resolvers.
+private var moduleContainer: Container!
+// Extension is internal. This way each module can have its own 
+extension ModuleDI {
+    var container: Container! { moduleContainer }
+}
+
+// And we can "inject" container like this.
+class MyCoordinator: ..., ModuleDI, ... {
+    ...
+}
+```
 
 ## Multithreading support
 

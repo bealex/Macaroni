@@ -113,6 +113,12 @@ container.register { [weak service] in service }
 Container.policy = .singleton(container)
 ```
 
+## Init-time injection
+              
+Second version of `@Injected` property wrapper is lazy. This means that objects are injected on first use, not during enclosing object initialization time.
+
+If you still need simple, "version-one style" DI, you can use `@InjectedFrom(container: Container)`.
+
 ## Per Module Injection
 
 If your application uses several modules and each module needs its own `Container`, you can use this option:

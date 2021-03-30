@@ -10,7 +10,7 @@
 extension Container {
     public enum Policy {
         case singleton(Container)
-        case enclosingObjectWithContainer(defaultSingletonContainer: Container? = nil)
+        case fromEnclosingObject(default: Container? = nil)
         case custom((_ enclosingObject: Any) -> Container)
     }
 
@@ -20,7 +20,7 @@ extension Container {
         switch policy {
             case .singleton(let container)?:
                 return container
-            case .enclosingObjectWithContainer(let defaultSingletonContainer)?:
+            case .fromEnclosingObject(let defaultSingletonContainer)?:
                 if let container = (instance as? WithContainer)?.container {
                     return container
                 } else if let resolver = instance as? WithContainerResolver {

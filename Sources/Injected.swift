@@ -10,9 +10,9 @@
 @propertyWrapper
 public struct Injected<Value> {
     public var wrappedValue: Value {
-        get { Macaroni.handleError("Injecting only works for class enclosing types") }
+        get { Macaroni.logger.errorAndDie("Injecting only works for class enclosing types") }
         // We need setter here so that KeyPaths in subscript were writable.
-        set { Macaroni.handleError("Injecting only works for class enclosing types") }
+        set { Macaroni.logger.errorAndDie("Injecting only works for class enclosing types") }
     }
 
     public init() {
@@ -34,7 +34,7 @@ public struct Injected<Value> {
                     enclosingValue.storage = value
                     return value
                 } else {
-                    Macaroni.handleError("Dependency \"\(String(describing: Value.self))\" is nil")
+                    Macaroni.logger.errorAndDie("Dependency \"\(String(describing: Value.self))\" is nil")
                 }
             }
         }

@@ -147,3 +147,19 @@ class MyCoordinator: ..., ModuleDI, ... {
 ## Multithreading support
 
 Macaroni does not do anything about multithreading. Please handle it yourself if needed.
+
+### Logging
+
+By default, Macaroni will log simple events: containers creation and resolvers registering. If you don't need that (or need to alter logs in some way), please use:
+
+```swift
+// To disable debug logs:
+Macaroni.logger = DisabledMacaroniLogger()
+
+// To alter logging behavior:
+class MyMacaroniLogger: MacaroniLogger {
+    // Implement logging methods
+}
+
+Macaroni.logger = MyMacaroniLogger()
+```

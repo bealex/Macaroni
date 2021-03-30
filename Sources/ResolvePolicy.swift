@@ -28,12 +28,12 @@ extension Container {
                 } else if let container = defaultSingletonContainer {
                     return container
                 } else {
-                    Macaroni.handleError("Can't find container for \(String(describing: instance.self))")
+                    Macaroni.logger.errorAndDie("Can't find container for \(String(describing: instance.self))")
                 }
             case .custom(let containerSelector)?:
                 return containerSelector(instance)
             case nil:
-                Macaroni.handleError("Container selection policy (Macaroni.Container.policy) is not set")
+                Macaroni.logger.errorAndDie("Container selection policy (Macaroni.Container.policy) is not set")
         }
     }
 
@@ -48,7 +48,7 @@ extension Container {
             } catch {
                 let valueType = String(describing: Value.self)
                 let enclosingType = String(describing: instance.self)
-                Macaroni.handleError("Can't find resolver for \"\(valueType)\" type in \"\(enclosingType)\" object")
+                Macaroni.logger.errorAndDie("Can't find resolver for \"\(valueType)\" type in \"\(enclosingType)\" object")
             }
         }
         return value

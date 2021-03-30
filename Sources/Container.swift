@@ -14,10 +14,17 @@ public enum ContainerError: Error {
 
 /// Dependency injection container, that can create objects from their type.
 public final class Container {
+    private static var counter: Int = 1
+
+    private let name: String
     private let parent: Container?
 
-    public init(parent: Container? = nil) {
+    public init(parent: Container? = nil, name: String? = nil) {
         self.parent = parent
+
+        self.name = name ?? "Container.\(Container.counter)"
+        Container.counter += 1
+        Macaroni.logger.debug("Created: \(self.name)\(self.parent == nil ? "" : "; parent: \(parent?.name ?? "???")")")
     }
 
     /// Resolvers that can create object by type.
@@ -63,6 +70,7 @@ public final class Container {
         if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
             typeResolvers[optionalKey] = resolver
         }
+        Macaroni.logger.debug("Registered \(String(describing: D.self)) in \(name)")
     }
 
     /// Registers resolving closure with parameter for type `D`. `@Injected` annotation sends enclosing object as a parameter.
@@ -72,12 +80,14 @@ public final class Container {
         if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
             typeParametrizedResolvers[key(Optional<D>.self)] = resolver
         }
+        Macaroni.logger.debug("Registered parametrized \(String(describing: D.self)) in \(name)")
     }
 
     /// Removes all resolvers.
     public func cleanup() {
         typeResolvers = [:]
         typeParametrizedResolvers = [:]
+        Macaroni.logger.debug("Removed all resolvers in \(name)")
     }
 
     private func key<D>(_ type: D.Type) -> String {

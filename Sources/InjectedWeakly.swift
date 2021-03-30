@@ -11,9 +11,9 @@
 @propertyWrapper
 public struct InjectedWeakly<Value> {
     public var wrappedValue: Value? {
-        get { Macaroni.handleError("Injecting only works for class enclosing types") }
+        get { Macaroni.logger.errorAndDie("Injecting only works for class enclosing types") }
         // We need setter here so that KeyPaths in subscript were writable.
-        set { Macaroni.handleError("Injecting only works for class enclosing types") }
+        set { Macaroni.logger.errorAndDie("Injecting only works for class enclosing types") }
     }
 
     public init() {

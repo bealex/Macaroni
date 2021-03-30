@@ -113,6 +113,37 @@ container.register { [weak service] in service }
 Container.policy = .singleton(container)
 ```
 
+## Init-time injection
+              
+Second version of `@Injected` property wrapper is lazy. This means that objects are injected on first use, not during enclosing object initialization time.
+
+If you still need simple, "version-one style" DI, you can use `@InjectedFrom(container: Container)`.
+
+## Per Module Injection
+
+If your application uses several modules and each module needs its own `Container`, you can use this option:
+
+```swift
+// Common code:
+protocol ModuleDI: WithContainer {}
+
+// Using this policy for each object to decide what container to use.  
+Container.policy = .enclosingObjectWithContainer()
+
+// Module specific code:
+// In each module create a container, and fill it with needed resolvers.
+private var moduleContainer: Container!
+// Extension is internal. This way each module can have its own 
+extension ModuleDI {
+    var container: Container! { moduleContainer }
+}
+
+// And we can "inject" container like this.
+class MyCoordinator: ..., ModuleDI, ... {
+    ...
+}
+```
+
 ## Multithreading support
 
 Macaroni does not do anything about multithreading. Please handle it yourself if needed.

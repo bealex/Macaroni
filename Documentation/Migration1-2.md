@@ -38,6 +38,7 @@ controller.testInjection()
 v 1.x:
 
 ```swift
+// Services creation and registration:
 class MyContainerFactory: SingletonContainerFactory {
     override func build() -> Container {
         let container = SimpleContainer()
@@ -47,18 +48,20 @@ class MyContainerFactory: SingletonContainerFactory {
     }
 }
 
+// Somewhere at application launch:
 Scope.default = Scope(factory: MyContainerFactory())
 ```
 
 v 2.x:
 
 ```swift
-func configure() {
-    let myService = MyServiceImplementation()
-    let container = Container()
-    container.register { () -> MyService in myService }
-    Container.policy = .singleton(container)
-}
+// Somewhere at application launch:
+let container = Container()
+Container.policy = .singleton(container)
+
+// Services creation and registration:
+let myService = MyServiceImplementation()
+container.register { () -> MyService in myService }
 ```
 
 #### Parametrized injection

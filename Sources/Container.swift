@@ -29,7 +29,8 @@ public final class Container {
 
     /// Resolvers that can create object by type.
     private var typeResolvers: [String: () -> Any] = [:]
-    /// Resolvers that can create object, based on type and some arbitrary parameter. What is this parameter, depends on the usage.
+    /// Resolvers that can create object, based on type and some arbitrary parameter.
+    /// What is this parameter, depends on the usage.
     private var typeParametrizedResolvers: [String: (_ parameter: Any) -> Any] = [:]
 
     /// Returns true, if type is resolvable with the container or its parent.

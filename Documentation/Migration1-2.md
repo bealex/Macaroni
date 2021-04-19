@@ -3,13 +3,24 @@
 ## From version 1.x to version 2.x
 
 If you use only one `Scope`:
- - `ContainerFactory` can be renamed to `Configurator`, remove superclass/protocol implementation, and `override` from `build` method.
- - `build` method does not need to return `Container` anymore. Replace container creation with `ContainerSelector.defaultContainer`.
- - Register all dependencies in `ContainerSelector.defaultContainer`.
+ - Container was configured in `ContainerFactory` in v 1.x. It can be configured anywhere now.
+ - Just add resolvers to custom `Container`, and set `Container.policy = .singleton(container)`
 
 If you use several scopes:
  - Create several containers, as in version 1.x (and remove all factory inheritance in the process).
- - Override `ContainerSelector.for` closure to select appropriate container for specified enclosing class.
+ - Set `Container.policy = .custom { enclosingObject in ... }` and define there how to select container for the object.
+
+Another option (you can use it if you use modules):
+ - Create protocol, that can have different implementations in different modules: `protocol ModuleDI: WithContainer {}`
+ - Set `Container.policy = .fromEnclosingObject()`
+ - In every Module set container for ModuleDI
+```swift
+private var moduleContainer: Container!
+extension ModuleDI {
+    var container: Container! { moduleContainer }
+}
+```
+ - Register everything in the `moduleContainer` as usual.
 
 ### Parametrized dependencies
 If you used some workaround for registering and initializing dependencies that require enclosing class information, please re-register them with new registration method: `Container.register<D>(_ resolver: @escaping (_ parameter: Any) -> D)`. If you use `@Injected`, parameter there will be enclosing class itself, you can use it to initialize injected instance.

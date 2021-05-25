@@ -44,7 +44,7 @@ private class MyControllerParametrizedInjected {
 class TestMacaroniLogger: XCTestCase, MacaroniLogger {
     var expectationHandler: (_ message: String) -> Void = { _ in }
 
-    func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: Int) {
+    func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: UInt) {
     }
 
     func die() -> Never {

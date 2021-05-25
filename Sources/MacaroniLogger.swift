@@ -13,23 +13,26 @@ public enum MacaroniLoggingLevel: Equatable {
 }
 
 public protocol MacaroniLogger {
-    func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: Int)
+    func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: UInt)
     func die() -> Never
 }
 
 public extension MacaroniLogger {
-    func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+    func debug(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) {
         log(message, level: .debug, file: file, function: function, line: line)
     }
 
-    func errorAndDie(_ message: String, file: String = #file, function: String = #function, line: Int = #line) -> Never {
+    func errorAndDie(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) -> Never {
         log(message, level: .error, file: file, function: function, line: line)
         die()
     }
 }
 
 public final class SimpleMacaroniLogger: MacaroniLogger {
-    public func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: Int) {
+    public init() {
+    }
+
+    public func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: UInt) {
         let levelString: String
         switch level {
             case .debug: levelString = "👣"
@@ -44,13 +47,16 @@ public final class SimpleMacaroniLogger: MacaroniLogger {
 }
 
 public final class DisabledMacaroniLogger: MacaroniLogger {
-    public func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: Int) {}
+    public init() {
+    }
+
+    public func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: UInt) {}
 
     public func die() -> Never {
         fatalError("Macaroni is dead")
     }
 }
 
-enum Macaroni {
-    static var logger: MacaroniLogger = SimpleMacaroniLogger()
+public enum Macaroni {
+    public static var logger: MacaroniLogger = SimpleMacaroniLogger()
 }

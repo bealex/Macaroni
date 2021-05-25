@@ -3,7 +3,7 @@ import XCTest
 
 private let testStringValue: String = "Yes Service!"
 
-private protocol MyService {
+private protocol MyService: AnyObject {
     var testValue: String { get }
 }
 
@@ -56,5 +56,14 @@ class InjectedTests: XCTestCase {
         let testObject = MyControllerWithForcedOptionals()
 
         XCTAssertEqual(testObject.myForceUnwrappedOptionalService.testValue, testStringValue)
+    }
+
+    func testSingleInjected() {
+        let testObject = MyController()
+
+        let myService1 = testObject.myService
+        let myService2 = testObject.myService
+
+        XCTAssertTrue(myService1 === myService2)
     }
 }

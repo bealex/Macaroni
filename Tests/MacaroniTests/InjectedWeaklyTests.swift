@@ -43,4 +43,14 @@ class InjectedWeaklyTests: XCTestCase {
         let testObject = MyController()
         XCTAssertNil(testObject.myService)
     }
+
+    func testSingleInjected() {
+        Self.container.register { () -> MyService? in MyServiceImplementation() }
+        let testObject = MyController()
+
+        let myService1 = testObject.myService
+        let myService2 = testObject.myService
+
+        XCTAssertTrue(myService1 === myService2)
+    }
 }

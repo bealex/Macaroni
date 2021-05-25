@@ -26,12 +26,12 @@ public struct Injected<Value> {
         storage storageKeyPath: ReferenceWritableKeyPath<EnclosingType, Self>
     ) -> Value {
         get {
-            var enclosingValue = instance[keyPath: storageKeyPath]
+            let enclosingValue = instance[keyPath: storageKeyPath]
             if let value = enclosingValue.storage {
                 return value
             } else {
                 if let value: Value = Container.resolve(for: instance) {
-                    enclosingValue.storage = value
+                    instance[keyPath: storageKeyPath].storage = value
                     return value
                 } else {
                     Macaroni.logger.errorAndDie("Dependency \"\(String(describing: Value.self))\" is nil")

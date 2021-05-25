@@ -28,17 +28,17 @@ public struct InjectedWeakly<Value> {
         storage storageKeyPath: ReferenceWritableKeyPath<EnclosingType, Self>
     ) -> Value? {
         get {
-            var enclosingValue = instance[keyPath: storageKeyPath]
+            let enclosingValue = instance[keyPath: storageKeyPath]
             if enclosingValue.isResolved, let value = enclosingValue.storage as? Value {
                 return value
             } else {
                 if let value: Value? = Container.resolve(for: instance) {
-                    enclosingValue.isResolved = true
-                    enclosingValue.storage = value as AnyObject
+                    instance[keyPath: storageKeyPath].isResolved = true
+                    instance[keyPath: storageKeyPath].storage = value as AnyObject
                     return value
                 } else {
-                    enclosingValue.isResolved = true
-                    enclosingValue.storage = nil
+                    instance[keyPath: storageKeyPath].isResolved = true
+                    instance[keyPath: storageKeyPath].storage = nil
                     return nil
                 }
             }

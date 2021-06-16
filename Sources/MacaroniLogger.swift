@@ -18,11 +18,11 @@ public protocol MacaroniLogger {
 }
 
 public extension MacaroniLogger {
-    func debug(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) {
+    func debug(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
         log(message, level: .debug, file: file, function: function, line: line)
     }
 
-    func errorAndDie(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) -> Never {
+    func errorAndDie(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) -> Never {
         log(message, level: .error, file: file, function: function, line: line)
         die()
     }
@@ -38,7 +38,7 @@ public final class SimpleMacaroniLogger: MacaroniLogger {
             case .debug: levelString = "👣"
             case .error: levelString = "👿"
         }
-        print("\(levelString) \(file.components(separatedBy: "/").last ?? "[unknown file]"):\(line) \(message)")
+        print("\(levelString) \(file):\(line) \(message)")
     }
 
     public func die() -> Never {

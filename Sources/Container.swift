@@ -34,18 +34,18 @@ public final class Container {
     private var typeParametrizedResolvers: [String: (_ parameter: Any) -> Any] = [:]
 
     /// Returns true, if type is resolvable with the container or its parent.
-    public func resolvable<D>(_ type: D.Type) -> Bool {
-        let key = self.key(type)
+    public func resolvable<D>(_ type: D.Type, option: String? = nil) -> Bool {
+        let key = self.key(type, option: option)
         return typeParametrizedResolvers[key] != nil || typeResolvers[key] != nil || (parent?.resolvable(type) ?? false)
     }
 
     /// Returns instance of type `D`, if it is registered.
-    public func resolve<D>() throws -> D? {
-        let key = self.key(D.self)
+    public func resolve<D>(alternative: String? = nil) throws -> D? {
+        let key = self.key(D.self, option: alternative)
         if let resolver = typeResolvers[key] {
             return resolver() as? D
         } else if let parent = parent {
-            return try parent.resolve()
+            return try parent.resolve(alternative: alternative)
         } else {
             throw ContainerError.noResolver
         }
@@ -53,21 +53,21 @@ public final class Container {
 
     /// Returns instance of type `D`, if it is registered. Sends `parameter` to the resolver.
     /// For example, parameter can be a class name that encloses value that needs to be injected.
-    public func resolve<D>(parameter: Any) throws -> D? {
-        let key = self.key(D.self)
+    public func resolve<D>(parameter: Any, alternative: String? = nil) throws -> D? {
+        let key = self.key(D.self, option: alternative)
         if let resolver = typeParametrizedResolvers[key] {
-            return try resolver(parameter) as? D ?? parent?.resolve(parameter: parameter)
+            return try resolver(parameter) as? D ?? parent?.resolve(parameter: parameter, alternative: alternative)
         } else if let parent = parent {
-            return try parent.resolve(parameter: parameter)
+            return try parent.resolve(parameter: parameter, alternative: alternative)
         } else {
             throw ContainerError.noResolver
         }
     }
 
     /// Registers resolving closure for type `D`.
-    public func register<D>(_ resolver: @escaping () -> D) {
-        typeResolvers[key(D.self)] = resolver
-        let optionalKey = key(Optional<D>.self)
+    public func register<D>(alternative: String? = nil, _ resolver: @escaping () -> D) {
+        typeResolvers[key(D.self, option: alternative)] = resolver
+        let optionalKey = key(Optional<D>.self, option: alternative)
         if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
             typeResolvers[optionalKey] = resolver
         }
@@ -75,11 +75,11 @@ public final class Container {
     }
 
     /// Registers resolving closure with parameter for type `D`. `@Injected` annotation sends enclosing object as a parameter.
-    public func register<D>(_ resolver: @escaping (_ parameter: Any) -> D) {
-        typeParametrizedResolvers[key(D.self)] = resolver
-        let optionalKey = key(Optional<D>.self)
+    public func register<D>(alternative: String? = nil, _ resolver: @escaping (_ parameter: Any) -> D) {
+        typeParametrizedResolvers[key(D.self, option: alternative)] = resolver
+        let optionalKey = key(Optional<D>.self, option: alternative)
         if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
-            typeParametrizedResolvers[key(Optional<D>.self)] = resolver
+            typeParametrizedResolvers[key(Optional<D>.self, option: alternative)] = resolver
         }
         Macaroni.logger.debug("Registered parametrized \(String(describing: D.self)) in \(name)")
     }
@@ -91,7 +91,7 @@ public final class Container {
         Macaroni.logger.debug("Removed all resolvers in \(name)")
     }
 
-    private func key<D>(_ type: D.Type) -> String {
-        String(reflecting: type)
+    private func key<D>(_ type: D.Type, option: String?) -> String {
+        "\(String(reflecting: type))\(option.map { ".\($0)" } ?? "")"
     }
 }

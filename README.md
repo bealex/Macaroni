@@ -8,7 +8,7 @@ When I start my projects, I need some kind of DI. When [property wrappers](https
 Macaroni v.2 uses a hack from this article https://www.swiftbysundell.com/articles/accessing-a-swift-property-wrappers-enclosing-instance/ to be able to access `self` of the enclosing object. There is a limitation because of that: `@Injected` can be used _only in classes_, because properties are being lazy initialized when accessed first time.
 
 #### Migration
- - [from v 1.x to v 2.x](Documentation/Migration1-2.md)
+ - [from v 1.x to v 2.x](Documentation/New Features and Migrations.md)
 
 ## Installation
 
@@ -143,6 +143,36 @@ class MyCoordinator: ..., ModuleDI, ... {
     ...
 }
 ```
+
+## Alternatives
+
+Sometimes you need to register several objects of the same type. In `Macaroni` they are called `RegistrationAlternative` 
+and can be registered like this:
+
+```swift
+protocol ToInject {}
+
+extension RegistrationAlternative {
+    static let first: RegistrationAlternative
+    static let second: RegistrationAlternative
+}
+
+container.register(alternative: .first) { () -> ToInject in toInjectFirstObject }
+container.register(alternative: .second) { () -> ToInject in toInjectSecondObject }
+```
+
+And inject it like this:
+
+```swift
+@Injected(alternative: .first)
+var firstValue: ToInject
+
+@Injected(alternative: .second)
+var secondValue: ToInject
+```
+
+You still have an ability to register `default` object together with other alternatives, 
+that will be accessible via simple `@Injected` without parameters. 
 
 ## Multithreading support
 

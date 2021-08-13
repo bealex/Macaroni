@@ -14,11 +14,11 @@ public struct InjectedFrom<Value> {
     private let container: Container
     private let value: Value
 
-    public init(container: Container) {
+    public init(container: Container, alternative: RegistrationAlternative? = nil) {
         self.container = container
 
         do {
-            if let value: Value = try container.resolve() {
+            if let value: Value = try container.resolve(alternative: alternative?.name) {
                 self.value = value
             } else {
                 Macaroni.logger.errorAndDie("Dependency \"\(String(describing: Value.self))\" is nil")

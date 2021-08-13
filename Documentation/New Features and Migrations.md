@@ -1,4 +1,8 @@
-# Migrations
+# New Features and Migrations
+
+## Version 2.1
+
+ - Added ability to register several object of same type via Alternatives (please look into README.md for details)
 
 ## From version 1.x to version 2.x
 

@@ -15,9 +15,11 @@ public struct Injected<Value> {
         set { Macaroni.logger.errorAndDie("Injecting only works for class enclosing types") }
     }
 
-    public init() {
+    public init(alternative: RegistrationAlternative? = nil) {
+        self.option = alternative
     }
 
+    private var option: RegistrationAlternative?
     private var storage: Value?
 
     public static subscript<EnclosingType>(
@@ -30,7 +32,8 @@ public struct Injected<Value> {
             if let value = enclosingValue.storage {
                 return value
             } else {
-                if let value: Value = Container.resolve(for: instance) {
+                let option = instance[keyPath: storageKeyPath].option
+                if let value: Value = Container.resolve(for: instance, option: option?.name) {
                     instance[keyPath: storageKeyPath].storage = value
                     return value
                 } else {

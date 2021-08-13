@@ -1,3 +1,11 @@
+//
+// InjectedFromTests
+// Macaroni
+//
+// Created by Alex Babaev on 27 March 2021.
+// Copyright © 2021 Alex Babaev. All rights reserved.
+//
+
 import XCTest
 @testable import Macaroni
 

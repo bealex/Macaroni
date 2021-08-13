@@ -1,16 +1,22 @@
+//
+// SimpleContainerTests
+// Macaroni
+//
+// Created by Alex Babaev on 27 March 2021.
+// Copyright © 2021 Alex Babaev. All rights reserved.
+//
+
 import XCTest
 @testable import Macaroni
 
 class SimpleContainerTests: XCTestCase {
     private class TestInjectedType {}
 
-    private var controlValue: Int!
     private var container: Container!
 
     override func setUp() {
         super.setUp()
 
-        controlValue = Int.random(in: Int.min ... Int.max)
         container = Container()
         container.register { TestInjectedType() }
     }

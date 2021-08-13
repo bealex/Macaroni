@@ -16,10 +16,12 @@ public struct InjectedWeakly<Value> {
         set { Macaroni.logger.errorAndDie("Injecting only works for class enclosing types") }
     }
 
-    public init() {
+    public init(alternative: RegistrationAlternative? = nil) {
+        self.option = alternative
     }
 
     weak var storage: AnyObject?
+    private var option: RegistrationAlternative?
     private var isResolved: Bool = false
 
     public static subscript<EnclosingType>(
@@ -32,7 +34,8 @@ public struct InjectedWeakly<Value> {
             if enclosingValue.isResolved, let value = enclosingValue.storage as? Value {
                 return value
             } else {
-                if let value: Value? = Container.resolve(for: instance) {
+                let option = instance[keyPath: storageKeyPath].option
+                if let value: Value? = Container.resolve(for: instance, option: option?.name) {
                     instance[keyPath: storageKeyPath].isResolved = true
                     instance[keyPath: storageKeyPath].storage = value as AnyObject
                     return value

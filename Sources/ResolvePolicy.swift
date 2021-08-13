@@ -37,14 +37,14 @@ extension Container {
         }
     }
 
-    static func resolve<Value, EnclosingType>(for instance: EnclosingType) -> Value? {
+    static func resolve<Value, EnclosingType>(for instance: EnclosingType, option: String? = nil) -> Value? {
         let container = self.container(for: instance)
         let value: Value?
         do {
-            value = try container.resolve(parameter: instance)
+            value = try container.resolve(parameter: instance, alternative: option)
         } catch {
             do {
-                value = try container.resolve()
+                value = try container.resolve(alternative: option)
             } catch {
                 let valueType = String(describing: Value.self)
                 let enclosingType = String(describing: instance.self)

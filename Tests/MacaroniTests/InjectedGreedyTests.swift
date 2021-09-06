@@ -1,5 +1,5 @@
 //
-// InjectedFromTests
+// InjectedGreedyTests
 // Macaroni
 //
 // Created by Alex Babaev on 27 March 2021.
@@ -30,22 +30,22 @@ private enum MyContainerHolder {
 }
 
 private class MyController {
-    @InjectedFrom(container: MyContainerHolder.container)
+    @Injected(container: MyContainerHolder.container)
     var myService: MyService
 }
 
 private class MyControllerWrongInjectedType {
-    @InjectedFrom(container: MyContainerHolder.container)
+    @Injected(container: MyContainerHolder.container)
     var myService: MyServiceImplementation
 }
 
 private class MyControllerNilInjected {
-    @InjectedFrom(container: MyContainerHolder.container)
+    @Injected(container: MyContainerHolder.container)
     var myValue: Int
 }
 
 private class MyControllerParametrizedInjected {
-    @InjectedFrom(container: MyContainerHolder.container)
+    @Injected(container: MyContainerHolder.container)
     var myValue: String
 }
 
@@ -61,7 +61,7 @@ class TestMacaroniLogger: XCTestCase, MacaroniLogger {
     }
 }
 
-class InjectedFromTests: XCTestCase {
+class InjectedGreedyTests: XCTestCase {
     func expectFatalError(description: String, testCase: @escaping () -> Void) {
         let expectation = self.expectation(description: description)
 

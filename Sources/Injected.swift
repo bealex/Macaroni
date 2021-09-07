@@ -25,7 +25,7 @@ public struct Injected<Value> {
                 Macaroni.logger.deathTrap("Injected value is nil")
             }
         }
-        set { /* do nothing */ }
+        set { /* compiler needs this. We do not. */ }
     }
     public private(set) var projectedValue: Container.Resolver<Value>
 

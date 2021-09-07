@@ -1,8 +1,17 @@
 # New Features and Migrations
 
+This document contains only short feature and update descriptions. Please refer to [README.md](README.md) for details.
+
+## Version 3.0
+
+ - Removed `@InjectedFrom`. It is replaced with `@Injected(container: Container)` option.
+ - (Swift 5.5 only) Added ability to inject into function parameters.
+ - Renamed `WithContainer` to `Containerable`.
+ - Renamed `Container.Policy` to `Container.FindPolicy`.
+
 ## Version 2.1
 
- - Added ability to register several object of same type via Alternatives (please look into README.md for details)
+ - Added ability to register several object of same type via _Alternatives_.
 
 ## From version 1.x to version 2.x
 

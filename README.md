@@ -3,16 +3,26 @@ Swift Dependency Injection Framework "Macaroni".
 
 #### Main reason to exist
 
-When I start my projects, I need some kind of DI. When [property wrappers](https://github.com/apple/swift-evolution/blob/master/proposals/0258-property-wrappers.md) were introduced, it was obvious that this feature can be used for DI framework. So here it is.
+When I start my projects, I need some kind of DI. 
+When [property wrappers](https://github.com/apple/swift-evolution/blob/master/proposals/0258-property-wrappers.md) were introduced, 
+it was obvious that this feature can be used for DI framework. So here it is.
 
-Macaroni v.2 uses a hack from this article https://www.swiftbysundell.com/articles/accessing-a-swift-property-wrappers-enclosing-instance/ to be able to access `self` of the enclosing object. There is a limitation because of that: `@Injected` can be used _only in classes_, because properties are being lazy initialized when accessed first time.
+Macaroni uses a hack from this article https://www.swiftbysundell.com/articles/accessing-a-swift-property-wrappers-enclosing-instance/ 
+to be able to access `self` of the enclosing object. There is a limitation because of that: `@Injected` can be used _only in classes_, 
+because properties are being lazy initialized when accessed first time, thus changing the object it is contained in
+(and it is not easy to do with value types).
 
 #### Migration
- - [from v 1.x to v 2.x](Documentation/New Features and Migrations.md)
+
+Please refer to [UPDATE.md](UPDATES.md) to know about migrations.
 
 ## Installation
 
-Please use [Swift Package Manager](https://swift.org/package-manager/). Repository address: `git@github.com:bealex/Macaroni.git`. Name: `Macaroni`.
+Please use [Swift Package Manager](https://swift.org/package-manager/). 
+Repository address: `git@github.com:bealex/Macaroni.git` or `https://github.com/bealex/Macaroni.git`. 
+Name of the package is `Macaroni`.
+
+Current version is v3.x
 
 ## Simple example
 
@@ -25,154 +35,165 @@ protocol MyService {}
 class MyServiceImplementation: MyService {}
 ```
 
-Now let's register the service inside a dependency injection container (`Macaroni.Container`). Think of Container as a box that holds all objects for injection. We will use simple, [service locator](https://en.wikipedia.org/wiki/Service_locator_pattern) DI policy (other policies are described later).
+Macaroni should know where container is placed, to get objects out of it and inject them. You can think of _container_ as a box 
+that holds all objects for injection. This knowledge of where container is placed is defined by `Container.FindPolicy` enum.
+Let's use simple [service locator](https://en.wikipedia.org/wiki/Service_locator_pattern) container finding policy, that uses
+a `singleton` object to hold all the objects that can be injected.
 
 ```swift
-func configure() {
-    let container = Container()
-
-    // This variant will create singleton resolver:
-    let myService = MyServiceImplementation()
-    container.register { myService }
-    
-    // And this object will be created every time during injection:
-    container.register { MyServiceImplementation() }
-    
-    Container.policy = .singleton(container)
-}
+let container = Container()
+Container.policy = .singleton(container)
 ```
 
-Please note that type of myService is inferred. This is why it will be able to inject it as `MyServiceImplementation`, but not `MyService`. To enable the latter, you should specify it either at declaration:
+To register the service inside a dependency injection container, we register a _resolver_ there. Resolver is a closure that 
+returns instance of a specific type. It can return same instance all the time, can create it each time it is accessed. You choose.
+For now let's register the resolver, that returns same instance every time it is used.
+
+```swift
+let myService = MyServiceImplementation()
+container.register { myService }
+```
+
+And then, later, in some `class` we can inject this value like this:
+
+```swift
+@Injected var myService: MyServiceImplementation
+```
+
+To be able to use it with the protocol like this:
+
+```swift
+@Injected var myService: MyService
+```
+
+we need to tell `Container`, that if it is being asked of `MyService`, it should inject this specific implementation. 
+It can be done like this:
 
 ```swift
 let myService: MyService = MyServiceImplementation()
+// Now myService is of type `MyService` and registration will be
+// typed as `() -> MyService` instead of `() -> MyServiceImplementation`
+container.register { myService }
 ```
 
-Or during the registration:
+or like this:
 
 ```swift
+let myService = MyServiceImplementation()
 container.register { () -> MyService in myService }
 ```
 
-Now we can inject things!
+> Please note that injection is happening lazily, not during `MyController` initialization but when `myService` is first accessed.
+
+## `Injected` options
+
+#### Class property injection
+
+Lazy injection from the container, determined by `Container.policy`:
 
 ```swift
-class MyController {
-    @Injected
-    var myService: MyService
+@Injected var property: Type
+```
+
+Lazy injection of an alternative object of the same type from the container, determined by `Container.policy`:
+
+```swift
+// create alternative identifier. Strings must be different for different types.
+extension RegistrationAlternative {
+    static let another: RegistrationAlternative = "another"
 }
-``` 
+// registration
+container.register(alternative: .another) { () -> MyService in anotherInstance }
+// injection
+@Injected(alternative: .another) var myServiceAlternative: MyService 
+```
 
-Please note that injection will happen lazily, not during `MyController` initialization but when `myService` is first accessed.
+Eager injection from specific container:
 
-## Using information about enclosing object (parametrized injection)
+> Please note that parametrized injection is not working in this case.
 
-If you need to use object that contains injected property, you can get it inside registration closure like this:
+```swift
+@Injected(container: container) var service: MyService
+```
+
+#### Function parameter injection
+
+Starting from Swift 5.5 we can use property wrappers for function parameters too. Here is the function declaration:
+
+```swift
+func foo(@Injected service: MyService) { ... }
+```
+
+And its call using default instance:
+
+```swift
+foo($service: container.resolved())
+```
+
+Or alternative instance
+
+```swift
+foo($service: container.resolved(alternative: .another))
+```
+
+#### Using information about enclosing object (parametrized injection)
+
+If you need to use object that contains the injected property, you can get from inside registration closure like this:
 
 ```swift
 container.register { enclosingObject -> String in String(describing: enclosing) }
 ```
 
-> Please note that there will be enclosed object only for `@Injected` and `@InjectedWeakly` Macaroni implementations. If you use Container in some custom environment, you are responsible for what is put there and how to use it. Macaroni property wrappers `@Injected` and `@InjectedWeakly` are using it only this way. 
-
-## `@Injected` resolve procedure
-
-> You can see all logic in `ResolvePolicy.swift`.
-
-If there is no value stored for the field, then it is created:
- - First, it looks for the parametrized resolver
- - Next, non-parametrized resolver
- - If nothing found, fatal error happens. You can override this behavior with the property: `Macaroni.handleError`
-
-If you will simultaneously register parametrized type resolver with non-parametrized one, parametrized will take precedence.
-
-## DI Policies
-
-There are three policies of container selection for properties of specific enclosing object:
- - service locator style. It is called `.singleton`, and can be set up like this: `Container.policy = .singleton(myContainer)`.
- - enclosing object based. This policy implies, that every enclosing object implements `WithContainer` protocol and contains its own `Container` because of that. You can set it up like this: `Container.policy = .enclosingObjectWithContainer` or if you want to use default singleton container for all objects that do not implement `WithContainer`, you can set default one: `Container.policy = .enclosingObjectWithContainer(defaultSingletonContainer: myDefaultContainer)`
-- custom. If you want to control container selection yourself and no other options help you, you can set it like this: `Container.policy = .custom { enclosingObject in /* your container selection policy */ }`
+> This resolver will be available for lazy injections only.
 
 ## Weak injection
 
-When using property wrappers, you can't use `weak` (or `lazy` or `unowned`). If you need that, you can use `@InjecteadWeakly` instead of `@Injected`. Here is an example:
+When using property wrappers, you can't use `weak` (or `lazy` or `unowned`). If you need that, you can use `@InjecteadWeakly`.
 
 ```swift
-private protocol MyService: AnyObject {}
-private class MyServiceImplementation: MyService {}
-
-private class MyController {
-    @InjectedWeakly
-    var myService: MyService?
-}
-
-// Please note that registration should not strongly capture an object. You should do something like this
-let service: MyService = MyServiceImplementation()
-let container = Container()
-container.register { [weak service] in service }
-Container.policy = .singleton(container)
+@InjectedWeakly var myService: MyService?
 ```
 
-## Init-time injection
-              
-Second version of `@Injected` property wrapper is lazy. This means that objects are injected on first use, not during enclosing object initialization time.
+## Eager (init-time) injection
 
-If you still need simple, "version-one style" DI, you can use `@InjectedFrom(container: Container)`.
+Using `container` parameters shows that initialization can happen right away.
+
+```swift
+@Injected(container: Container) var myService: MyService
+```
+
+## Container finding Policies
+
+There are three policies of container selection for properties of specific enclosing object:
+ - service locator style. It is called `.singleton`, and can be set up like this: `Container.policy = .singleton(myContainer)`.
+ - enclosing object based. This policy implies, that every enclosing type implements `Containerable`
+   protocol that defines `Container` for the object. You can set it up with `.fromEnclosingObject(default:)`.
+ - custom. If you want to control container finding yourself and no other options suit you, you can set it like this: 
+   `Container.policy = .custom { enclosingObject in /* your container finding policy */ }`
 
 ## Per Module Injection
 
 If your application uses several modules and each module needs its own `Container`, you can use this option:
 
+Write this somewhere in the common module:
+
 ```swift
-// Common code:
-protocol ModuleDI: WithContainer {}
+protocol ModuleDI: Containerable {}
+Container.policy = .fromEnclosingObject()
+```
 
-// Using this policy for each object to decide what container to use.  
-Container.policy = .enclosingObjectWithContainer()
+And this in each module:
 
-// Module specific code:
-// In each module create a container, and fill it with needed resolvers.
+```swift
 private var moduleContainer: Container!
-// Extension is internal. This way each module can have its own 
 extension ModuleDI {
-    var container: Container! { moduleContainer }
+    var container: Container! { moduleContainer } // now each module does have its own container
 }
 
-// And we can "inject" container like this.
-class MyCoordinator: ..., ModuleDI, ... {
-    ...
+class MyClass: ModuleDI {
+    @Inject var service: MyService // will be injected from the `moduleContainer`
 }
 ```
-
-## Alternatives
-
-Sometimes you need to register several objects of the same type. In `Macaroni` they are called `RegistrationAlternative` 
-and can be registered like this:
-
-```swift
-protocol ToInject {}
-
-extension RegistrationAlternative {
-    static let first: RegistrationAlternative
-    static let second: RegistrationAlternative
-}
-
-container.register(alternative: .first) { () -> ToInject in toInjectFirstObject }
-container.register(alternative: .second) { () -> ToInject in toInjectSecondObject }
-```
-
-And inject it like this:
-
-```swift
-@Injected(alternative: .first)
-var firstValue: ToInject
-
-@Injected(alternative: .second)
-var secondValue: ToInject
-```
-
-You still have an ability to register `default` object together with other alternatives, 
-that will be accessible via simple `@Injected` without parameters. 
 
 ## Multithreading support
 
@@ -180,16 +201,20 @@ Macaroni does not do anything about multithreading. Please handle it yourself if
 
 ### Logging
 
-By default, Macaroni will log simple events: containers creation and resolvers registering. If you don't need that (or need to alter logs in some way), please use:
+By default, Macaroni will log simple events: containers creation and resolvers registering. If you don't need that
+(or need to alter logs in some way), please set `Macaroni.Logger` to your implementation of `MacaroniLogger`:
 
 ```swift
-// To disable debug logs:
-Macaroni.logger = DisabledMacaroniLogger()
-
-// To alter logging behavior:
 class MyMacaroniLogger: MacaroniLogger {
-    // Implement logging methods
+    func log(...) { ... }
+    func die() -> Never { ... }
 }
 
 Macaroni.logger = MyMacaroniLogger()
+```
+
+Use this code to disable logging completely:
+
+```swift
+Macaroni.logger = DisabledMacaroniLogger()
 ```

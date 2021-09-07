@@ -4,6 +4,7 @@
 //
 // Created by Alex Babaev on 13 August 2021.
 // Copyright © 2021 Alex Babaev. All rights reserved.
+// License: MIT License, https://github.com/bealex/Macaroni/blob/master/LICENSE
 //
 
 import Foundation

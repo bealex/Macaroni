@@ -2,8 +2,8 @@
 // Container.FindPolicy
 // Macaroni
 //
-// Created by Alex Babaev on 30 May 2020.
-// Copyright © 2020 Alex Babaev. All rights reserved.
+// Created by Alex Babaev on 30 May 2021.
+// Copyright © 2021 Alex Babaev. All rights reserved.
 // License: MIT License, https://github.com/bealex/Macaroni/blob/master/LICENSE
 //
 

@@ -218,3 +218,8 @@ Use this code to disable logging completely:
 ```swift
 Macaroni.logger = DisabledMacaroniLogger()
 ```
+
+## License
+
+License: MIT, https://github.com/bealex/Macaroni/blob/master/LICENSE
+

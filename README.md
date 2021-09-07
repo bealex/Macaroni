@@ -1,5 +1,5 @@
 # Macaroni
-Swift Dependency Injection Framework "Macaroni".
+Swift Dependency Injection Framework "Macaroni". Made to fight [spaghetti-code](https://en.wikipedia.org/wiki/Spaghetti_code)! :–)
 
 #### Main reason to exist
 

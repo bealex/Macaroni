@@ -17,12 +17,12 @@ public protocol MacaroniLogger {
     func die() -> Never
 }
 
-public extension MacaroniLogger {
+extension MacaroniLogger {
     func debug(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
         log(message, level: .debug, file: file, function: function, line: line)
     }
 
-    func errorAndDie(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) -> Never {
+    func deathTrap(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) -> Never {
         log(message, level: .error, file: file, function: function, line: line)
         die()
     }
@@ -42,7 +42,7 @@ public final class SimpleMacaroniLogger: MacaroniLogger {
     }
 
     public func die() -> Never {
-        fatalError("Macaroni is dead")
+        fatalError("Fatal error occurred during dependency resolving.")
     }
 }
 
@@ -53,7 +53,7 @@ public final class DisabledMacaroniLogger: MacaroniLogger {
     public func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: UInt) {}
 
     public func die() -> Never {
-        fatalError("Macaroni is dead")
+        fatalError("Fatal error occurred during dependency resolving.")
     }
 }
 

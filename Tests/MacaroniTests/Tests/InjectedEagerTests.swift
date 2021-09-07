@@ -1,5 +1,5 @@
 //
-// InjectedGreedyTests
+// InjectedEagerTests
 // Macaroni
 //
 // Created by Alex Babaev on 27 March 2021.
@@ -7,9 +7,13 @@
 //
 
 import XCTest
-@testable import Macaroni
+import Macaroni
 
 private let testStringValue: String = "Yes Service!"
+
+private struct ToInject {
+    var value: String
+}
 
 private protocol MyService {
     var testValue: String { get }
@@ -23,6 +27,7 @@ private enum MyContainerHolder {
     static var container: Container = {
         let container = Container()
         container.register { () -> Int? in nil }
+        container.register { () -> ToInject in .init(value: testStringValue) }
         container.register { () -> MyService in MyServiceImplementation() }
         container.register { (_) -> String in testStringValue }
         return container
@@ -49,52 +54,37 @@ private class MyControllerParametrizedInjected {
     var myValue: String
 }
 
-class TestMacaroniLogger: XCTestCase, MacaroniLogger {
-    var expectationHandler: (_ message: String) -> Void = { _ in }
-
-    func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: UInt) {
-    }
-
-    func die() -> Never {
-        expectationHandler("Macaroni is dead")
-        repeat { RunLoop.current.run() } while (true) // For never to work
-    }
+private class MyControllerInjectedWithResolved {
+    @Injected(resolver: MyContainerHolder.container.resolved())
+    var property: ToInject
 }
 
-class InjectedGreedyTests: XCTestCase {
-    func expectFatalError(description: String, testCase: @escaping () -> Void) {
-        let expectation = self.expectation(description: description)
-
-        let logger = TestMacaroniLogger()
-        logger.expectationHandler = { _ in expectation.fulfill() }
-        Macaroni.logger = logger
-
-        DispatchQueue.global(qos: .userInitiated).async(execute: testCase)
-        waitForExpectations(timeout: 1) { _ in
-            Macaroni.logger = SimpleMacaroniLogger()
-        }
-    }
-
+class InjectedEagerTests: BaseTestCase {
     func testSimpleInjected() {
         let testObject = MyController()
         XCTAssertEqual(testObject.myService.testValue, testStringValue)
     }
 
     func testWrongTypeInjected() {
-        expectFatalError(description: "Wrong type injected") {
+        waitForDeathTrap(description: "Wrong type injected") {
             _ = MyControllerWrongInjectedType()
         }
     }
 
     func testNilInjected() {
-        expectFatalError(description: "Nil injected") {
+        waitForDeathTrap(description: "Nil injected") {
             _ = MyControllerNilInjected()
         }
     }
 
     func testParametrizedInjected() {
-        expectFatalError(description: "Parametrized injected") {
+        waitForDeathTrap(description: "Parametrized injected") {
             _ = MyControllerParametrizedInjected()
         }
+    }
+
+    func testInjectedWithResolved() {
+        let testObject = MyControllerInjectedWithResolved()
+        XCTAssertEqual(testObject.property.value, testStringValue)
     }
 }

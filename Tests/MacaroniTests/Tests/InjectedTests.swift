@@ -7,9 +7,10 @@
 //
 
 import XCTest
-@testable import Macaroni
+import Macaroni
 
 private let testStringValue: String = "Yes Service!"
+private let testIntValue: Int = 239
 
 private protocol MyService: AnyObject {
     var testValue: String { get }
@@ -26,6 +27,11 @@ private class MyController {
     var myStringInitializingWithParameter: String
 }
 
+private class MyControllerWrongInjection {
+    @Injected
+    var myProperty: Int
+}
+
 private class MyControllerWithOptionals {
     @Injected
     var myOptionalService: MyService?
@@ -38,7 +44,7 @@ private class MyControllerWithForcedOptionals {
     var myForceUnwrappedOptionalService: MyService!
 }
 
-class InjectedTests: XCTestCase {
+class InjectedTests: BaseTestCase {
     override func setUp() {
         let container = Container()
         container.register { (_) -> String in testStringValue }
@@ -51,6 +57,14 @@ class InjectedTests: XCTestCase {
 
         XCTAssertEqual(testObject.myService.testValue, testStringValue)
         XCTAssertEqual(testObject.myStringInitializingWithParameter, testStringValue)
+    }
+
+    func testInjectionFail() {
+        let testObject = MyControllerWrongInjection()
+
+        waitForDeathTrap(description: "No value to inject") {
+            _ = testObject.myProperty
+        }
     }
 
     func testOptionalInjected() {

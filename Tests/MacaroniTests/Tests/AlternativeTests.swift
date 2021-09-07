@@ -7,14 +7,14 @@
 //
 
 import XCTest
-@testable import Macaroni
+import Macaroni
 
 extension RegistrationAlternative {
     static let one: RegistrationAlternative = "one"
-    static let two: RegistrationAlternative = "two"
+    static let two: RegistrationAlternative = .init("two")
 }
 
-class AlternativeTests: XCTestCase {
+class AlternativeTests: BaseTestCase {
     private var container: Container!
 
     func testSimpleAlternatives() throws {

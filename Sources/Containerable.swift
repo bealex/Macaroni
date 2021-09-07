@@ -1,5 +1,5 @@
 //
-// WithContainer
+// Containerable
 // Macaroni
 //
 // Created by Alex Babaev on 26 March 2021.
@@ -9,10 +9,6 @@
 
 import Foundation
 
-public protocol WithContainer {
-    var container: Container! { get }
-}
-
-public protocol WithContainerResolver {
-    var container: (() -> Container)! { get }
+public protocol Containerable {
+    var container: Container.FindPolicy.Finder { get }
 }

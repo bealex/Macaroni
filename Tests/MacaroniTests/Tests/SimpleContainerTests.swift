@@ -7,9 +7,9 @@
 //
 
 import XCTest
-@testable import Macaroni
+import Macaroni
 
-class SimpleContainerTests: XCTestCase {
+class SimpleContainerTests: BaseTestCase {
     private class TestInjectedType {}
 
     private var container: Container!

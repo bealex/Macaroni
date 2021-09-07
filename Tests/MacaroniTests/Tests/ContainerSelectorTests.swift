@@ -7,9 +7,9 @@
 //
 
 import XCTest
-@testable import Macaroni
+import Macaroni
 
-class ContainerSelectorTests: XCTestCase {
+class ContainerSelectorTests: BaseTestCase {
     private class TestInjectedType {}
 
     class MyController1 {

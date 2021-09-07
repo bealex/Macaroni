@@ -7,6 +7,8 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/master/LICENSE
 //
 
+import Foundation
+
 public enum ContainerError: Error {
     /// No resolvers was found for the type.
     case noResolver
@@ -16,8 +18,8 @@ public enum ContainerError: Error {
 public final class Container {
     private static var counter: Int = 1
 
-    private let name: String
-    private let parent: Container?
+    let name: String
+    let parent: Container?
 
     public init(parent: Container? = nil, name: String? = nil) {
         self.parent = parent
@@ -40,10 +42,10 @@ public final class Container {
     }
 
     /// Returns instance of type `D`, if it is registered.
-    public func resolve<D>(alternative: String? = nil) throws -> D? {
+    public func resolve<D>(alternative: String? = nil) throws -> D {
         let key = self.key(D.self, option: alternative)
         if let resolver = typeResolvers[key] {
-            return resolver() as? D
+            return resolver() as! D
         } else if let parent = parent {
             return try parent.resolve(alternative: alternative)
         } else {
@@ -53,10 +55,10 @@ public final class Container {
 
     /// Returns instance of type `D`, if it is registered. Sends `parameter` to the resolver.
     /// For example, parameter can be a class name that encloses value that needs to be injected.
-    public func resolve<D>(parameter: Any, alternative: String? = nil) throws -> D? {
+    public func resolve<D>(parameter: Any, alternative: String? = nil) throws -> D {
         let key = self.key(D.self, option: alternative)
         if let resolver = typeParametrizedResolvers[key] {
-            return try resolver(parameter) as? D ?? parent?.resolve(parameter: parameter, alternative: alternative)
+            return resolver(parameter) as! D
         } else if let parent = parent {
             return try parent.resolve(parameter: parameter, alternative: alternative)
         } else {
@@ -94,4 +96,27 @@ public final class Container {
     private func key<D>(_ type: D.Type, option: String?) -> String {
         "\(String(reflecting: type))\(option.map { ".\($0)" } ?? "")"
     }
+}
+
+extension Container {
+    public struct Resolver<Value> {
+        public let container: Container
+        public let alternative: String?
+
+        public init(container: Container, alternative: String? = nil) {
+            self.container = container
+            self.alternative = alternative
+        }
+
+        public func resolve() throws -> Value {
+            try container.resolve(alternative: alternative)
+        }
+
+        public func resolvable(_ type: Value.Type, option: String? = nil) -> Bool {
+            container.resolvable(Value.self)
+        }
+    }
+
+    /// For using with @Injected wrapper in functions, like this: `foo($parameter: container.resolved)`
+    public func resolved<D>(alternative: String? = nil) -> Resolver<D> { .init(container: self, alternative: alternative) }
 }

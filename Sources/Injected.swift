@@ -7,57 +7,71 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/master/LICENSE
 //
 
-public extension Container {
-    static var emptyDefaultContainer: Container = Container(name: "emptyAndDefault")
+private extension Container {
+    static let alwaysFailRootContainerName: String = "_alwaysFailContainersDeriveFromThis"
+    static let alwaysFailRootContainer: Container = Container(name: alwaysFailRootContainerName)
+
+    // TODO: Maybe cache these results? Need a test.
+    static func alwaysFailResolver<D>() -> Container.Resolver<D> { .init(container: Container(parent: Container.alwaysFailRootContainer)) }
 }
 
 @propertyWrapper
 public struct Injected<Value> {
     public var wrappedValue: Value {
-        get { storage! }
-        set { storage = newValue }
+        get {
+            if let value = storage {
+                return value
+            } else {
+                Macaroni.logger.deathTrap("Injected value is nil")
+            }
+        }
+        set { /* do nothing */ }
     }
-    public private(set) var projectedValue: Container
+    public private(set) var projectedValue: Container.Resolver<Value>
 
+    // This works only for lazy initialization
     private var alternative: RegistrationAlternative?
     private var storage: Value?
 
-    // Is used for class property injection.
-    public init(alternative: RegistrationAlternative? = nil, container: Container = .emptyDefaultContainer) {
-        self.alternative = alternative
-        projectedValue = container
+    // Is used for class property injection. Lazy initialization if container is not present, eager otherwise.
+    public init(alternative: RegistrationAlternative? = nil, container: Container? = nil) {
+        if let container = container {
+            // eager initialization
+            projectedValue = container.resolved(alternative: alternative?.name)
+            resolveRightNowIfPossible()
+        } else {
+            // lazy initialization, wrapped value will be determined using subscript.
+            self.alternative = alternative
+            projectedValue = Container.alwaysFailResolver()
+        }
+    }
+
+    public init(resolver: Container.Resolver<Value>) {
+        projectedValue = resolver
         resolveRightNowIfPossible()
     }
 
-    // Is used for function parameter injection.
-    public init(wrappedValue: Value, alternative: RegistrationAlternative? = nil, container: Container = .emptyDefaultContainer) {
+    public init(wrappedValue: Value) {
         storage = wrappedValue
-        self.alternative = alternative
-        projectedValue = container
-        // this will override storage, so it is usually pointless to use this call with wrappedValue and container together
-        resolveRightNowIfPossible()
+        projectedValue = Container.alwaysFailResolver()
     }
 
     // Is used for function parameter injection.
-    public init(projectedValue: Container) {
+    public init(projectedValue: Container.Resolver<Value>) {
         self.projectedValue = projectedValue
         resolveRightNowIfPossible()
     }
 
-    private mutating func resolveRightNowIfPossible() {
-        guard projectedValue !== Container.emptyDefaultContainer else { return }
+    // TODO: Possibly allow usage of `.singleton` and/or `.fromEnclosingObject` container search policies
 
+    private mutating func resolveRightNowIfPossible() {
         do {
-            if let value: Value = try projectedValue.resolve(alternative: alternative?.name) {
-                storage = value
-            } else {
-                Macaroni.logger.errorAndDie("Dependency \"\(String(describing: Value.self))\" is nil")
-            }
+            storage = try projectedValue.resolve()
         } catch {
             if projectedValue.resolvable(Value.self) {
-                Macaroni.logger.errorAndDie("Parametrized resolvers are not supported for greedy injection (\"\(String(describing: Value.self))\").")
+                Macaroni.logger.deathTrap("Parametrized resolvers are not supported for greedy injection (\"\(String(describing: Value.self))\").")
             } else {
-                Macaroni.logger.errorAndDie("Dependency \"\(String(describing: Value.self))\" does not have a resolver")
+                Macaroni.logger.deathTrap("Dependency \"\(String(describing: Value.self))\" does not have a resolver")
             }
         }
     }
@@ -73,13 +87,10 @@ public struct Injected<Value> {
             if let value = enclosingValue.storage {
                 return value
             } else {
-                let option = instance[keyPath: storageKeyPath].alternative
-                if let value: Value = Container.resolve(for: instance, option: option?.name) {
-                    instance[keyPath: storageKeyPath].storage = value
-                    return value
-                } else {
-                    Macaroni.logger.errorAndDie("Dependency \"\(String(describing: Value.self))\" is nil")
-                }
+                let alternative = instance[keyPath: storageKeyPath].alternative
+                let value: Value = Container.resolve(for: instance, option: alternative?.name)
+                instance[keyPath: storageKeyPath].storage = value
+                return value
             }
         }
         set { /* compiler needs this. We do not. */ }

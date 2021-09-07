@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import Macaroni
+import Macaroni
 
 private let testStringValue: String = "Yes Service!"
 
@@ -19,7 +19,7 @@ private class MyController {
     var myService: MyService?
 }
 
-class InjectedWeaklyTests: XCTestCase {
+class InjectedWeaklyTests: BaseTestCase {
     static let container = Container()
 
     override class func setUp() {

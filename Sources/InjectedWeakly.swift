@@ -11,17 +11,17 @@
 @propertyWrapper
 public struct InjectedWeakly<Value> {
     public var wrappedValue: Value? {
-        get { Macaroni.logger.errorAndDie("Injecting only works for class enclosing types") }
+        get { Macaroni.logger.deathTrap("Injecting only works for class enclosing types") }
         // We need setter here so that KeyPaths in subscript were writable.
-        set { Macaroni.logger.errorAndDie("Injecting only works for class enclosing types") }
+        set { Macaroni.logger.deathTrap("Injecting only works for class enclosing types") }
     }
 
     public init(alternative: RegistrationAlternative? = nil) {
-        self.option = alternative
+        self.alternative = alternative
     }
 
-    weak var storage: AnyObject?
-    private var option: RegistrationAlternative?
+    private weak var storage: AnyObject?
+    private var alternative: RegistrationAlternative?
     private var isResolved: Bool = false
 
     public static subscript<EnclosingType>(
@@ -34,7 +34,7 @@ public struct InjectedWeakly<Value> {
             if enclosingValue.isResolved, let value = enclosingValue.storage as? Value {
                 return value
             } else {
-                let option = instance[keyPath: storageKeyPath].option
+                let option = instance[keyPath: storageKeyPath].alternative
                 if let value: Value? = Container.resolve(for: instance, option: option?.name) {
                     instance[keyPath: storageKeyPath].isResolved = true
                     instance[keyPath: storageKeyPath].storage = value as AnyObject

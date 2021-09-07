@@ -23,8 +23,25 @@ Repository address: `git@github.com:bealex/Macaroni.git` or `https://github.com/
 Name of the package is `Macaroni`.
 
 Current version is v3.x
+    
+## 30-second tutorial
 
-## Simple example
+```swift
+// Create container
+let container = Container()
+// Set it as a singleton
+Container.policy = .singleton(container)
+// Register service there
+let myService = MyServiceImplementation()
+container.register { () -> MyService in myService }
+
+// Use it in classes
+class MyClass {
+   @Injected var service: MyService
+}
+```
+
+## Example
 
 First let's import Macaroni and prepare our protocol and implementation that we want to inject.
 

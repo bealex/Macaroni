@@ -4,8 +4,8 @@ Swift Dependency Injection Framework "Macaroni". Made to fight [spaghetti-code](
 #### Main reason to exist
 
 When I start my projects, I need some kind of DI. 
-When [property wrappers](https://github.com/apple/swift-evolution/blob/master/proposals/0258-property-wrappers.md) were introduced, 
-it was obvious that this feature can be used for DI framework. So here it is.
+It's obvious that [property wrappers](https://github.com/apple/swift-evolution/blob/master/proposals/0258-property-wrappers.md) 
+can be used for DI framework. Here it is.
 
 Macaroni uses a hack from this article https://www.swiftbysundell.com/articles/accessing-a-swift-property-wrappers-enclosing-instance/ 
 to be able to access `self` of the enclosing object. There is a limitation because of that: `@Injected` can be used _only in classes_, 

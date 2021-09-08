@@ -1,5 +1,6 @@
 # Macaroni
-Swift Dependency Injection Framework "Macaroni". Made to fight [spaghetti-code](https://en.wikipedia.org/wiki/Spaghetti_code)! :–)
+It's a Swift Dependency Injection Framework that is called “Macaroni”. 
+Cut [Spaghetti Code](https://en.wikipedia.org/wiki/Spaghetti_code) into pieces! :–)
 
 #### Main reason to exist
 
@@ -31,7 +32,7 @@ Current version is v3.x
 let container = Container()
 // Set it as a singleton
 Container.policy = .singleton(container)
-// Register service there
+// Add service implementations into the container
 let myService = MyServiceImplementation()
 container.register { () -> MyService in myService }
 

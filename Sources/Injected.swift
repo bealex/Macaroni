@@ -39,27 +39,32 @@ public struct Injected<Value> {
             // eager initialization
             projectedValue = container.resolved(alternative: alternative?.name)
             resolveRightNowIfPossible()
+            Macaroni.logger.debug("Injecting (eager, container): \(String(describing: Value.self))")
         } else {
             // lazy initialization, wrapped value will be determined using subscript.
             self.alternative = alternative
             projectedValue = Container.alwaysFailResolver()
+            Macaroni.logger.debug("Injecting (lazy): \(String(describing: Value.self))")
         }
     }
 
     public init(resolver: Container.Resolver<Value>) {
         projectedValue = resolver
         resolveRightNowIfPossible()
+        Macaroni.logger.debug("Injecting (eager, resolver): \(String(describing: Value.self))")
     }
 
     public init(wrappedValue: Value) {
         storage = wrappedValue
         projectedValue = Container.alwaysFailResolver()
+        Macaroni.logger.debug("Injecting (eager, value): \(String(describing: Value.self))")
     }
 
     // Is used for function parameter injection.
     public init(projectedValue: Container.Resolver<Value>) {
         self.projectedValue = projectedValue
         resolveRightNowIfPossible()
+        Macaroni.logger.debug("Injecting (eager, projected): \(String(describing: Value.self))")
     }
 
     // TODO: Possibly allow usage of `.singleton` and/or `.fromEnclosingObject` container search policies
@@ -74,6 +79,7 @@ public struct Injected<Value> {
                 Macaroni.logger.deathTrap("Dependency \"\(String(describing: Value.self))\" does not have a resolver")
             }
         }
+        Macaroni.logger.debug("Injecting (eager, container): \(String(describing: Value.self))")
     }
 
     /// Is called when injected into a class property and being accessed.
@@ -87,6 +93,12 @@ public struct Injected<Value> {
             if let value = enclosingValue.storage {
                 return value
             } else {
+                Macaroni.logger.debug(
+                    "Resolving " + "\(wrappedKeyPath)"
+                        .replacingOccurrences(of: "Swift.ReferenceWritableKeyPath<", with: "")
+                        .replacingOccurrences(of: ">", with: "")
+                        .replacingOccurrences(of: ", ", with: "->")
+                )
                 let alternative = instance[keyPath: storageKeyPath].alternative
                 let value: Value = Container.resolve(for: instance, option: alternative?.name)
                 instance[keyPath: storageKeyPath].storage = value

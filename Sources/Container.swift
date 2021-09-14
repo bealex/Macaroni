@@ -26,7 +26,7 @@ public final class Container {
 
         self.name = name ?? "Container.\(Container.counter)"
         Container.counter += 1
-        Macaroni.logger.debug("Created: \(self.name)\(self.parent == nil ? "" : "; parent: \(parent?.name ?? "???")")")
+        Macaroni.logger.debug("+ \(self.name)\(self.parent == nil ? "" : "; parent: \(parent?.name ?? "???")")")
     }
 
     /// Resolvers that can create object by type.
@@ -73,7 +73,7 @@ public final class Container {
         if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
             typeResolvers[optionalKey] = resolver
         }
-        Macaroni.logger.debug("Registered \(String(describing: D.self)) in \(name)")
+        Macaroni.logger.debug("\(name) <- \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
     }
 
     /// Registers resolving closure with parameter for type `D`. `@Injected` annotation sends enclosing object as a parameter.
@@ -83,14 +83,14 @@ public final class Container {
         if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
             typeParametrizedResolvers[key(Optional<D>.self, option: alternative)] = resolver
         }
-        Macaroni.logger.debug("Registered parametrized \(String(describing: D.self)) in \(name)")
+        Macaroni.logger.debug("\(name) <- \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "") (with parameter))")
     }
 
     /// Removes all resolvers.
     public func cleanup() {
         typeResolvers = [:]
         typeParametrizedResolvers = [:]
-        Macaroni.logger.debug("Removed all resolvers in \(name)")
+        Macaroni.logger.debug("\(name) cleared")
     }
 
     private func key<D>(_ type: D.Type, option: String?) -> String {

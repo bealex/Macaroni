@@ -15,7 +15,7 @@ because properties are being lazy initialized when accessed first time, thus cha
 
 #### Migration
 
-Please refer to [UPDATE.md](UPDATES.md) to know about migrations.
+Please look at [UPDATE.md](UPDATES.md) to find out about migrations.
 
 ## Installation
 

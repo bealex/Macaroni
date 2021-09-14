@@ -97,7 +97,7 @@ public struct Injected<Value> {
                     "Resolving " + "\(wrappedKeyPath)"
                         .replacingOccurrences(of: "Swift.ReferenceWritableKeyPath<", with: "")
                         .replacingOccurrences(of: ">", with: "")
-                        .replacingOccurrences(of: ", ", with: "->")
+                        .replacingOccurrences(of: ", ", with: "<-")
                 )
                 let alternative = instance[keyPath: storageKeyPath].alternative
                 let value: Value = Container.resolve(for: instance, option: alternative?.name)

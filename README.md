@@ -239,5 +239,5 @@ Macaroni.logger = DisabledMacaroniLogger()
 
 ## License
 
-License: MIT, https://github.com/bealex/Macaroni/blob/master/LICENSE
+License: MIT, https://github.com/bealex/Macaroni/blob/main/LICENSE
 

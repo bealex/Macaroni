@@ -4,7 +4,7 @@
 //
 // Created by Alex Babaev on 29 May 2021.
 // Copyright © 2021 Alex Babaev. All rights reserved.
-// License: MIT License, https://github.com/bealex/Macaroni/blob/master/LICENSE
+// License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
 /// This wrapper can be used only with classes. You must capture injected object weakly (with [weak object]) in registration closure.

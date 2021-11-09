@@ -16,7 +16,7 @@ let package = Package(
     name: "Macaroni",
     platforms: [ .iOS(.v11), .macOS(.v10_14) ],
     products: [
-        .library(name: "Macaroni", type: .static, targets: [ "Macaroni" ]),
+        .library(name: "Macaroni", targets: [ "Macaroni" ]),
     ],
     targets: [
         .target(name: "Macaroni", dependencies: [], path: "Sources"),

@@ -23,7 +23,7 @@ Please use [Swift Package Manager](https://swift.org/package-manager/).
 Repository address: `git@github.com:bealex/Macaroni.git` or `https://github.com/bealex/Macaroni.git`. 
 Name of the package is `Macaroni`.
 
-Current version is v3.x
+Current version is v2.x
     
 ## 30-second tutorial
 

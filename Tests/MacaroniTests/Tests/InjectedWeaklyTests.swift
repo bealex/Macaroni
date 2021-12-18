@@ -27,6 +27,11 @@ class InjectedWeaklyTests: BaseTestCase {
         Container.policy = .singleton(container)
     }
 
+    override class func tearDown() {
+        super.tearDown()
+        Container.policy = .none
+    }
+
     override func setUp() {
         Self.container.cleanup()
     }

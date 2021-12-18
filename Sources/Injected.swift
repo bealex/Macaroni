@@ -29,9 +29,12 @@ public struct Injected<Value> {
     }
     public private(set) var projectedValue: Container.Resolver<Value>
 
-    // This works only for lazy initialization
+    // This works only for lazy initialization.
     private var alternative: RegistrationAlternative?
     private var storage: Value?
+
+    // We need to strongly handle policy to be able to resolve lazily.
+    private var containerFindPolicy: Container.FindPolicy?
 
     // Is used for class property injection. Lazy initialization if container is not present, eager otherwise.
     public init(alternative: RegistrationAlternative? = nil, container: Container? = nil) {
@@ -41,6 +44,7 @@ public struct Injected<Value> {
             resolveRightNowIfPossible()
             Macaroni.logger.debug("Injecting (eager, container): \(String(describing: Value.self))")
         } else {
+            containerFindPolicy = container.map { .singleton($0) } ?? Container.policy
             // lazy initialization, wrapped value will be determined using subscript.
             self.alternative = alternative
             projectedValue = Container.alwaysFailResolver()
@@ -100,7 +104,11 @@ public struct Injected<Value> {
                         .replacingOccurrences(of: ", ", with: "<-")
                 )
                 let alternative = instance[keyPath: storageKeyPath].alternative
-                let value: Value = Container.resolve(for: instance, option: alternative?.name)
+                guard let findPolicy = instance[keyPath: storageKeyPath].containerFindPolicy else {
+                    Macaroni.logger.deathTrap("Container selection policy (Macaroni.Container.policy) is not set")
+                }
+
+                let value: Value = findPolicy.resolve(for: instance, option: alternative?.name)
                 instance[keyPath: storageKeyPath].storage = value
                 return value
             }

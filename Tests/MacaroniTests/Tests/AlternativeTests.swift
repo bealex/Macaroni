@@ -50,6 +50,7 @@ class AlternativeTests: BaseTestCase {
 
         container = Container()
         Container.policy = .singleton(container)
+        addTeardownBlock { Container.policy = .none }
         container.register { () -> TestInjectedProtocol in objectDefault }
         container.register(alternative: .one) { () -> TestInjectedProtocol in objectOne }
 

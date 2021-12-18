@@ -51,6 +51,7 @@ class InjectedTests: BaseTestCase {
         container.register { (_) -> String in testStringValue }
         container.register { () -> MyService in MyServiceImplementation() }
         Container.policy = .singleton(container)
+        addTeardownBlock { Container.policy = .none }
     }
 
     func testSimpleInjected() {

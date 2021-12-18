@@ -40,6 +40,7 @@ class ContainerSelectorTests: BaseTestCase {
                 default: return defaultContainer
             }
         }
+        addTeardownBlock { Container.policy = .none }
 
         let myController1 = MyController1()
         let myController2 = MyController2()

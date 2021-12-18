@@ -31,6 +31,12 @@ class InjectedAsParameterTests: BaseTestCase {
         Container.policy = .singleton(container)
     }
 
+    override func tearDown() {
+        super.tearDown()
+
+        Container.policy = .none
+    }
+
     func testSimpleInjected() {
         func test(@Injected value: String) -> String {
             value

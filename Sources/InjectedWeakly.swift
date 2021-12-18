@@ -16,8 +16,12 @@ public struct InjectedWeakly<Value> {
         set { Macaroni.logger.deathTrap("Injecting only works for class enclosing types") }
     }
 
+    // We need to strongly handle policy to be able to resolve lazily.
+    private var containerFindPolicy: Container.FindPolicy?
+
     public init(alternative: RegistrationAlternative? = nil) {
         self.alternative = alternative
+        containerFindPolicy = Container.policy
     }
 
     private weak var storage: AnyObject?
@@ -35,7 +39,11 @@ public struct InjectedWeakly<Value> {
                 return value
             } else {
                 let option = instance[keyPath: storageKeyPath].alternative
-                if let value: Value? = Container.resolve(for: instance, option: option?.name) {
+                guard let findPolicy = instance[keyPath: storageKeyPath].containerFindPolicy else {
+                    Macaroni.logger.deathTrap("Container selection policy (Macaroni.Container.policy) is not set")
+                }
+
+                if let value: Value? = findPolicy.resolve(for: instance, option: option?.name) {
                     instance[keyPath: storageKeyPath].isResolved = true
                     instance[keyPath: storageKeyPath].storage = value as AnyObject
                     return value

@@ -49,8 +49,8 @@ class AlternativeTests: BaseTestCase {
         let objectOne = TestInjectedClassOne(property: nil)
 
         container = Container()
-        Container.policy = .singleton(container)
-        addTeardownBlock { Container.policy = .none }
+        Container.policy = SingletonContainer(container)
+        addTeardownBlock { Container.policy = UninitializedContainer() }
         container.register { () -> TestInjectedProtocol in objectDefault }
         container.register(alternative: .one) { () -> TestInjectedProtocol in objectOne }
 
@@ -71,12 +71,12 @@ class AlternativeTests: BaseTestCase {
         let valueTwo: TestInjectedProtocol?
         do {
             valueDefault = try container.resolve()
-        } catch ContainerError.noResolver {
+        } catch MacaroniError.noResolver {
             valueDefault = nil
         }
         do {
             valueTwo = try container.resolve(alternative: .two)
-        } catch ContainerError.noResolver {
+        } catch MacaroniError.noResolver {
             valueTwo = nil
         }
 
@@ -94,7 +94,7 @@ class AlternativeTests: BaseTestCase {
         let valueOne: TestInjectedProtocol?
         do {
             valueOne = try container.resolve(alternative: .one)
-        } catch ContainerError.noResolver {
+        } catch MacaroniError.noResolver {
             valueOne = nil
         }
         let valueOneWithParameter: TestInjectedProtocol? = try container.resolve(parameter: "Parameter", alternative: .one)

@@ -31,7 +31,7 @@ Current version is v3.x
 // Create container
 let container = Container()
 // Set it as a singleton
-Container.policy = .singleton(container)
+Container.policy = SingletonContainer(container)
 // Add service implementations into the container
 let myService = MyServiceImplementation()
 container.register { () -> MyService in myService }
@@ -180,14 +180,13 @@ Using `container` parameters shows that initialization can happen right away.
 @Injected(container: Container) var myService: MyService
 ```
 
-## Container finding Policies
+## Container lookup Policies
 
 There are three policies of container selection for properties of specific enclosing object:
- - service locator style. It is called `.singleton`, and can be set up like this: `Container.policy = .singleton(myContainer)`.
+ - service locator style. It is called `SingletonContainer`, and can be set up like this: `Container.policy = SingletonContainer(myContainer)`.
  - enclosing object based. This policy implies, that every enclosing type implements `Containerable`
-   protocol that defines `Container` for the object. You can set it up with `.fromEnclosingObject(default:)`.
- - custom. If you want to control container finding yourself and no other options suit you, you can set it like this: 
-   `Container.policy = .custom { enclosingObject in /* your container finding policy */ }`
+   protocol that defines `Container` for the object. You can set it up with `EnclosingTypeContainer(default:)`.
+ - custom. If you want to control container finding yourself and no other options suit you, you can implement `ContainerFindable` yourself.
 
 ## Per Module Injection
 
@@ -197,7 +196,7 @@ Write this somewhere in the common module:
 
 ```swift
 protocol ModuleDI: Containerable {}
-Container.policy = .fromEnclosingObject()
+Container.policy = EnclosingTypeContainer()
 ```
 
 And this in each module:

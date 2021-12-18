@@ -22,12 +22,12 @@ class ContainerFindPolicyTests: BaseTestCase {
     }
 
     class ToInjectClassContainerable: Containerable {
-        private(set) var container: Container.FindPolicy.Finder
+        private(set) var container: Container!
 
         @Injected
         var property: String
 
-        init(container: Container.FindPolicy.Finder) {
+        init(container: Container) {
             self.container = container
         }
     }
@@ -35,7 +35,7 @@ class ContainerFindPolicyTests: BaseTestCase {
     override func tearDown() {
         super.tearDown()
 
-        Container.policy = nil
+        Container.policy = UninitializedContainer()
     }
 
     private let testString = "Injected String"
@@ -43,10 +43,10 @@ class ContainerFindPolicyTests: BaseTestCase {
     func testNoResolvePolicyInClass() {
         let container = Container()
         container.register { [self] () -> String in testString }
-        Container.policy = nil
+        Container.policy = UninitializedContainer()
 
-        let instance = ToInjectClass()
         waitForDeathTrap(description: "No Resolve Policy (class)") {
+            let instance = ToInjectClass()
             _ = instance.property
         }
     }
@@ -54,10 +54,10 @@ class ContainerFindPolicyTests: BaseTestCase {
     func testNoResolvePolicyInStruct() {
         let container = Container()
         container.register { [self] () -> String in testString }
-        Container.policy = nil
+        Container.policy = UninitializedContainer()
 
-        let instance = ToInjectStruct()
         waitForDeathTrap(description: "No Resolve Policy (struct)") {
+            let instance = ToInjectStruct()
             _ = instance.property
         }
     }
@@ -65,7 +65,7 @@ class ContainerFindPolicyTests: BaseTestCase {
     func testSingletonPolicyInClass() {
         let container = Container()
         container.register { [self] () -> String in testString }
-        Container.policy = .singleton(container)
+        Container.policy = SingletonContainer(container)
 
         let instance = ToInjectClass()
         XCTAssertTrue(instance.property == testString)
@@ -74,7 +74,7 @@ class ContainerFindPolicyTests: BaseTestCase {
     func testSingletonPolicyInStruct() {
         let container = Container()
         container.register { [self] () -> String in testString }
-        Container.policy = .singleton(container)
+        Container.policy = SingletonContainer(container)
 
         let instance = ToInjectStruct()
         waitForDeathTrap(description: "No Resolve Policy (struct)") {
@@ -85,7 +85,7 @@ class ContainerFindPolicyTests: BaseTestCase {
     func testFromEnclosedObjectPolicyFail() {
         let container = Container()
         container.register { [self] () -> String in testString }
-        Container.policy = .fromEnclosingObject()
+        Container.policy = EnclosingTypeContainer()
 
         let instance = ToInjectClass()
         waitForDeathTrap(description: "From enclosed object policy fail") {
@@ -96,27 +96,9 @@ class ContainerFindPolicyTests: BaseTestCase {
     func testFromEnclosedObjectPolicyWithContainer() {
         let container = Container()
         container.register { [self] () -> String in testString }
-        Container.policy = .fromEnclosingObject()
+        Container.policy = EnclosingTypeContainer()
 
-        let instance = ToInjectClassContainerable(container: .direct(container))
-        XCTAssertTrue(instance.property == testString)
-    }
-
-    func testFromEnclosedObjectPolicyWithContainerFinder() {
-        let container = Container()
-        container.register { [self] () -> String in testString }
-        Container.policy = .fromEnclosingObject()
-
-        let instance = ToInjectClassContainerable(container: .indirect { container })
-        XCTAssertTrue(instance.property == testString)
-    }
-
-    func testCustomPolicy() {
-        let container = Container()
-        container.register { [self] () -> String in testString }
-        Container.policy = .custom { _ in container }
-
-        let instance = ToInjectClass()
+        let instance = ToInjectClassContainerable(container: container)
         XCTAssertTrue(instance.property == testString)
     }
 }

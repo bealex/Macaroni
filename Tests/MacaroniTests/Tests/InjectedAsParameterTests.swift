@@ -28,13 +28,13 @@ class InjectedAsParameterTests: BaseTestCase {
     override func setUp() {
         container = Container()
         container.register { () -> String in testStringValue }
-        Container.policy = .singleton(container)
+        Container.policy = SingletonContainer(container)
     }
 
     override func tearDown() {
         super.tearDown()
 
-        Container.policy = .none
+        Container.policy = UninitializedContainer()
     }
 
     func testSimpleInjected() {

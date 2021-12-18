@@ -23,6 +23,29 @@ class ContainerSelectorTests: BaseTestCase {
         var string: String
     }
 
+    public class CustomContainer: ContainerFindable {
+        private let container1: Container
+        private let container2: Container
+        private let defaultContainer: Container
+
+        public init(container1: Container, container2: Container, defaultContainer: Container) {
+            self.container1 = container1
+            self.container2 = container2
+            self.defaultContainer = defaultContainer
+        }
+
+        public func container<EnclosingType>(
+            for instance: EnclosingType,
+            file: String = #fileID, function: String = #function, line: UInt = #line
+        ) -> Container? {
+            switch instance {
+                case is MyController1: return container1
+                case is MyController2: return container2
+                default: return defaultContainer
+            }
+        }
+    }
+
     func testDefaultScope() throws {
         let checkStringScope1 = "String for scope 1"
         let checkStringScope2 = "String for scope 2"
@@ -33,14 +56,8 @@ class ContainerSelectorTests: BaseTestCase {
         container1.register { () -> String in checkStringScope1 }
         container2.register { () -> String in checkStringScope2 }
 
-        Container.policy = .custom { enclosingObject in
-            switch enclosingObject {
-                case is MyController1: return container1
-                case is MyController2: return container2
-                default: return defaultContainer
-            }
-        }
-        addTeardownBlock { Container.policy = .none }
+        Container.policy = CustomContainer(container1: container1, container2: container2, defaultContainer: defaultContainer)
+        addTeardownBlock { Container.policy = UninitializedContainer() }
 
         let myController1 = MyController1()
         let myController2 = MyController2()

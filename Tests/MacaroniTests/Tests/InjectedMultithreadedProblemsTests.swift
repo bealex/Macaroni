@@ -4,6 +4,7 @@
 //
 // Created by Alex Babaev on 18 December 2021.
 // Copyright © 2021 Alex Babaev. All rights reserved.
+// License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
 import Foundation
@@ -33,12 +34,12 @@ class InjectedMultithreadedProblemsTests: XCTestCase {
         let testString = "Injected String"
 
         var container: Container? = Container()
-        Container.policy = .singleton(container!)
+        Container.policy = SingletonContainer(container!)
         container?.register { () -> String in testString }
 
         let injectInto = InjectInto()
         container = nil
-        Container.policy = .none
+        Container.policy = UninitializedContainer()
 
         XCTAssertEqual(injectInto.useString(), testString)
     }
@@ -47,12 +48,12 @@ class InjectedMultithreadedProblemsTests: XCTestCase {
         let testString = "Injected String"
 
         var container: Container? = Container()
-        Container.policy = .singleton(container!)
+        Container.policy = SingletonContainer(container!)
         container?.register { () -> String? in testString }
 
         let injectInto = InjectIntoWeakly()
         container = nil
-        Container.policy = .none
+        Container.policy = UninitializedContainer()
 
         XCTAssertEqual(injectInto.useString(), testString)
     }

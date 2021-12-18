@@ -17,11 +17,16 @@ public struct InjectedWeakly<Value> {
     }
 
     // We need to strongly handle policy to be able to resolve lazily.
-    private var containerFindPolicy: Container.FindPolicy?
+    private var findPolicyCapture: Injected<Value>.ContainerFindPolicyCapture = .onFirstUsage
 
-    public init(alternative: RegistrationAlternative? = nil) {
+    public init(
+        alternative: RegistrationAlternative? = nil, captureContainerLookupNow: Bool = true,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) {
         self.alternative = alternative
-        containerFindPolicy = Container.policy
+        if captureContainerLookupNow {
+            findPolicyCapture = .onInitialization(Container.policy)
+        }
     }
 
     private weak var storage: AnyObject?
@@ -39,7 +44,7 @@ public struct InjectedWeakly<Value> {
                 return value
             } else {
                 let option = instance[keyPath: storageKeyPath].alternative
-                guard let findPolicy = instance[keyPath: storageKeyPath].containerFindPolicy else {
+                guard let findPolicy = instance[keyPath: storageKeyPath].findPolicyCapture.policy else {
                     Macaroni.logger.deathTrap("Container selection policy (Macaroni.Container.policy) is not set")
                 }
 

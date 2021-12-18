@@ -9,11 +9,6 @@
 
 import Foundation
 
-public enum ContainerError: Error {
-    /// No resolvers was found for the type.
-    case noResolver
-}
-
 /// Dependency injection container, that can create objects from their type.
 public final class Container {
     private static var counter: Int = 1
@@ -49,7 +44,7 @@ public final class Container {
         } else if let parent = parent {
             return try parent.resolve(alternative: alternative)
         } else {
-            throw ContainerError.noResolver
+            throw MacaroniError.noResolver
         }
     }
 
@@ -62,7 +57,7 @@ public final class Container {
         } else if let parent = parent {
             return try parent.resolve(parameter: parameter, alternative: alternative)
         } else {
-            throw ContainerError.noResolver
+            throw MacaroniError.noResolver
         }
     }
 

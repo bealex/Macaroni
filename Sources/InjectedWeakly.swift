@@ -25,7 +25,7 @@ public struct InjectedWeakly<Value> {
     ) {
         self.alternative = alternative
         if captureContainerLookupNow {
-            findPolicyCapture = .onInitialization(Container.policy)
+            findPolicyCapture = .onInitialization(Container.lookupPolicy)
         }
     }
 

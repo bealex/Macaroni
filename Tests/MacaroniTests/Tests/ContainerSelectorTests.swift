@@ -23,7 +23,7 @@ class ContainerSelectorTests: BaseTestCase {
         var string: String
     }
 
-    public class CustomContainer: ContainerFindable {
+    public class CustomContainer: ContainerLookupPolicy {
         private let container1: Container
         private let container2: Container
         private let defaultContainer: Container
@@ -56,8 +56,8 @@ class ContainerSelectorTests: BaseTestCase {
         container1.register { () -> String in checkStringScope1 }
         container2.register { () -> String in checkStringScope2 }
 
-        Container.policy = CustomContainer(container1: container1, container2: container2, defaultContainer: defaultContainer)
-        addTeardownBlock { Container.policy = UninitializedContainer() }
+        Container.lookupPolicy = CustomContainer(container1: container1, container2: container2, defaultContainer: defaultContainer)
+        addTeardownBlock { Container.lookupPolicy = nil }
 
         let myController1 = MyController1()
         let myController2 = MyController2()

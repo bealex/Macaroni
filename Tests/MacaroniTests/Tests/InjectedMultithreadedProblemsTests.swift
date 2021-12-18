@@ -34,12 +34,12 @@ class InjectedMultithreadedProblemsTests: XCTestCase {
         let testString = "Injected String"
 
         var container: Container? = Container()
-        Container.policy = SingletonContainer(container!)
+        Container.lookupPolicy = SingletonContainer(container!)
         container?.register { () -> String in testString }
 
         let injectInto = InjectInto()
         container = nil
-        Container.policy = UninitializedContainer()
+        Container.lookupPolicy = nil
 
         XCTAssertEqual(injectInto.useString(), testString)
     }
@@ -48,12 +48,12 @@ class InjectedMultithreadedProblemsTests: XCTestCase {
         let testString = "Injected String"
 
         var container: Container? = Container()
-        Container.policy = SingletonContainer(container!)
+        Container.lookupPolicy = SingletonContainer(container!)
         container?.register { () -> String? in testString }
 
         let injectInto = InjectIntoWeakly()
         container = nil
-        Container.policy = UninitializedContainer()
+        Container.lookupPolicy = nil
 
         XCTAssertEqual(injectInto.useString(), testString)
     }

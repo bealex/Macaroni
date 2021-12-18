@@ -9,19 +9,7 @@
 
 import Foundation
 
-public class UninitializedContainer: ContainerFindable {
-    public init() {
-    }
-
-    public func container<EnclosingType>(
-        for instance: EnclosingType,
-        file: String = #fileID, function: String = #function, line: UInt = #line
-    ) -> Container? {
-        Macaroni.logger.deathTrap("container(for:) has not been implemented", file: file, function: function, line: line)
-    }
-}
-
-public class SingletonContainer: ContainerFindable {
+public class SingletonContainer: ContainerLookupPolicy {
     private let container: Container
 
     public init(_ container: Container) {
@@ -40,7 +28,7 @@ public protocol Containerable {
     var container: Container! { get }
 }
 
-public class EnclosingTypeContainer: ContainerFindable {
+public class EnclosingTypeContainer: ContainerLookupPolicy {
     private let defaultContainer: Container?
 
     public init(default: Container? = nil) {

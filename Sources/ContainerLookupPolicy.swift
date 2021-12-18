@@ -7,15 +7,15 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
-public protocol ContainerFindable {
+public protocol ContainerLookupPolicy {
     func container<EnclosingType>(for instance: EnclosingType, file: String, function: String, line: UInt) -> Container?
 }
 
 public extension Container {
-    static var policy: ContainerFindable = UninitializedContainer()
+    static var lookupPolicy: ContainerLookupPolicy!
 }
 
-extension ContainerFindable {
+extension ContainerLookupPolicy {
     func resolve<Value, EnclosingType>(
         for instance: EnclosingType, option: String? = nil,
         file: String = #fileID, function: String = #function, line: UInt = #line

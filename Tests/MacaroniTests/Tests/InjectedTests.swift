@@ -45,13 +45,18 @@ private class MyControllerWithForcedOptionals {
     var myForceUnwrappedOptionalService: MyService!
 }
 
+private struct MyStruct {
+    @Injected
+    var myProperty: String
+}
+
 class InjectedTests: BaseTestCase {
     override func setUp() {
         let container = Container()
         container.register { (_) -> String in testStringValue }
         container.register { () -> MyService in MyServiceImplementation() }
-        Container.policy = SingletonContainer(container)
-        addTeardownBlock { Container.policy = UninitializedContainer() }
+        Container.lookupPolicy = SingletonContainer(container)
+        addTeardownBlock { Container.lookupPolicy = nil }
     }
 
     func testSimpleInjected() {
@@ -89,5 +94,12 @@ class InjectedTests: BaseTestCase {
         let myService2 = testObject.myService
 
         XCTAssertTrue(myService1 === myService2)
+    }
+
+    func testStructInjection() {
+        let testStruct = MyStruct()
+        waitForDeathTrap(description: "No value to inject") {
+            XCTAssertEqual(testStruct.myProperty, testStringValue)
+        }
     }
 }

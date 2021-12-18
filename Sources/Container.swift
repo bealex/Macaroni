@@ -19,9 +19,9 @@ public final class Container {
     public init(parent: Container? = nil, name: String? = nil) {
         self.parent = parent
 
-        self.name = name ?? "Container.\(Container.counter)"
+        self.name = name ?? "UnnamedContainer.\(Container.counter)"
         Container.counter += 1
-        Macaroni.logger.debug("+ \(self.name)\(self.parent == nil ? "" : "; parent: \(parent?.name ?? "???")")")
+        Macaroni.logger.debug("\(self.name)\(self.parent == nil ? "" : " (parent: \(parent?.name ?? "???"))") created")
     }
 
     /// Resolvers that can create object by type.
@@ -68,7 +68,7 @@ public final class Container {
         if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
             typeResolvers[optionalKey] = resolver
         }
-        Macaroni.logger.debug("\(name) <- \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
+        Macaroni.logger.debug("\(name) is registering resolver for \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
     }
 
     /// Registers resolving closure with parameter for type `D`. `@Injected` annotation sends enclosing object as a parameter.
@@ -78,7 +78,7 @@ public final class Container {
         if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
             typeParametrizedResolvers[key(Optional<D>.self, option: alternative)] = resolver
         }
-        Macaroni.logger.debug("\(name) <- \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "") (with parameter))")
+        Macaroni.logger.debug("\(name) is registering parametrized resolver for \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
     }
 
     /// Removes all resolvers.

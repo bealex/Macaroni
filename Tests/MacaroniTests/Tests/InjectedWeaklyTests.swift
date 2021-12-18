@@ -24,12 +24,12 @@ class InjectedWeaklyTests: BaseTestCase {
     static let container = Container()
 
     override class func setUp() {
-        Container.policy = SingletonContainer(container)
+        Container.lookupPolicy = SingletonContainer(container)
     }
 
     override class func tearDown() {
         super.tearDown()
-        Container.policy = UninitializedContainer()
+        Container.lookupPolicy = nil
     }
 
     override func setUp() {

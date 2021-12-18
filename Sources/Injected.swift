@@ -8,23 +8,22 @@
 //
 
 private extension Container {
-    static let alwaysFailRootContainerName: String = "_alwaysFailContainersDeriveFromThis"
-    static let alwaysFailRootContainer: Container = Container(name: alwaysFailRootContainerName)
+    static let alwaysFailRootContainer: Container = Container(name: "_alwaysFailContainersDeriveFromThis")
 
     // TODO: Maybe cache these results? Need a test.
-    static func alwaysFailResolver<D>() -> Container.Resolver<D> { .init(container: Container(parent: Container.alwaysFailRootContainer)) }
+    static func alwaysFailResolver<D>() -> Container.Resolver<D> { .init(container: Container.alwaysFailRootContainer) }
 }
 
 @propertyWrapper
 public struct Injected<Value> {
     public enum ContainerFindPolicyCapture {
-        case onInitialization(ContainerFindable)
+        case onInitialization(ContainerLookupPolicy)
         case onFirstUsage
 
-        var policy: ContainerFindable? {
+        var policy: ContainerLookupPolicy? {
             switch self {
                 case .onInitialization(let policy): return policy
-                case .onFirstUsage: return Container.policy
+                case .onFirstUsage: return Container.lookupPolicy
             }
         }
     }
@@ -53,66 +52,59 @@ public struct Injected<Value> {
         alternative: RegistrationAlternative? = nil, container: Container? = nil, captureContainerLookupNow: Bool = true,
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) {
+        self.alternative = alternative
         if let container = container {
             // eager initialization
             projectedValue = container.resolved(alternative: alternative?.name)
-            resolveRightNowIfPossible()
-            Macaroni.logger.debug(
-                "Injecting (eager, container): \(String(reflecting: Value.self))", file: file, function: function, line: line
-            )
+            resolveRightNowIfPossible(file: file, function: function, line: line)
+            Macaroni.logger.debug("Injecting (eager from container): \(String(describing: Value.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
         } else {
+            // lazy initialization, wrapped value will be determined using subscript.
+            projectedValue = Container.alwaysFailResolver()
             if let container = container {
                 findPolicyCapture = .onInitialization(SingletonContainer(container))
             } else if captureContainerLookupNow {
-                findPolicyCapture = .onInitialization(Container.policy)
+                if let policy = Container.lookupPolicy {
+                    findPolicyCapture = .onInitialization(policy)
+                } else {
+                    Macaroni.logger.deathTrap("Container.lookupPolicy is not initialized", file: file, function: function, line: line)
+                }
             }
-
-            // lazy initialization, wrapped value will be determined using subscript.
-            self.alternative = alternative
-            projectedValue = Container.alwaysFailResolver()
-            Macaroni.logger.debug(
-                "Injecting (lazy): \(String(reflecting: Value.self))", file: file, function: function, line: line
-            )
+            Macaroni.logger.debug("Injecting (lazy): \(String(describing: Value.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
         }
     }
 
     public init(resolver: Container.Resolver<Value>, file: String = #fileID, function: String = #function, line: UInt = #line) {
         projectedValue = resolver
-        resolveRightNowIfPossible()
-        Macaroni.logger.debug("Injecting (eager, resolver): \(String(reflecting: Value.self))", file: file, function: function, line: line)
+        resolveRightNowIfPossible(file: file, function: function, line: line)
+        Macaroni.logger.debug("Injecting (eager, resolver): \(String(describing: Value.self))", file: file, function: function, line: line)
     }
 
     public init(wrappedValue: Value, file: String = #fileID, function: String = #function, line: UInt = #line) {
         storage = wrappedValue
         projectedValue = Container.alwaysFailResolver()
-        Macaroni.logger.debug("Injecting (eager, value): \(String(reflecting: Value.self))", file: file, function: function, line: line)
+        Macaroni.logger.debug("Injecting (eager, value): \(String(describing: Value.self))", file: file, function: function, line: line)
     }
 
     // Is used for function parameter injection.
     public init(projectedValue: Container.Resolver<Value>, file: String = #fileID, function: String = #function, line: UInt = #line) {
         self.projectedValue = projectedValue
-        resolveRightNowIfPossible()
-        Macaroni.logger.debug("Injecting (eager, projected): \(String(reflecting: Value.self))", file: file, function: function, line: line)
+        resolveRightNowIfPossible(file: file, function: function, line: line)
+        Macaroni.logger.debug("Injecting (eager, projected): \(String(describing: Value.self))", file: file, function: function, line: line)
     }
 
-    // TODO: Possibly allow usage of `.singleton` and/or `.fromEnclosingObject` container search policies
-
     private mutating func resolveRightNowIfPossible(file: String = #fileID, function: String = #function, line: UInt = #line) {
+        // TODO: Possibly allow usage of `.singleton` and/or `.fromEnclosingObject` container search policies
         do {
             storage = try projectedValue.resolve()
         } catch {
             if projectedValue.resolvable(Value.self) {
-                Macaroni.logger.deathTrap(
-                    "Parametrized resolvers are not supported for greedy injection (\"\(String(reflecting: Value.self))\").",
-                    file: file, function: function, line: line
-                )
+                Macaroni.logger.deathTrap("Parametrized resolvers are not supported for greedy injection (\"\(String(describing: Value.self))\").", file: file, function: function, line: line)
             } else {
-                Macaroni.logger.deathTrap(
-                    "Dependency \"\(String(reflecting: Value.self))\" does not have a resolver", file: file, function: function, line: line
-                )
+                Macaroni.logger.deathTrap("Dependency \"\(String(describing: Value.self))\" does not have a resolver", file: file, function: function, line: line)
             }
         }
-        Macaroni.logger.debug("Injecting (eager, container): \(String(reflecting: Value.self))", file: file, function: function, line: line)
+        Macaroni.logger.debug("Injecting (eager, container): \(String(describing: Value.self))", file: file, function: function, line: line)
     }
 
     /// Is called when injected into a class property and being accessed.
@@ -126,19 +118,12 @@ public struct Injected<Value> {
             if let value = enclosingValue.storage {
                 return value
             } else {
-                Macaroni.logger.debug(
-                    "Resolving " + "\(wrappedKeyPath)"
-                        .replacingOccurrences(of: "Swift.ReferenceWritableKeyPath<", with: "")
-                        .replacingOccurrences(of: ">", with: "")
-                        .replacingOccurrences(of: ", ", with: "<-")
-                )
+                let alternative = instance[keyPath: storageKeyPath].alternative
+                Macaroni.logger.debug("Resolving \(String(describing: EnclosingType.self)).…: \(String(describing: Value.self))\(alternative.map { "/\($0.name)" } ?? "")")
                 guard let findPolicy = instance[keyPath: storageKeyPath].findPolicyCapture.policy else {
-                    Macaroni.logger.deathTrap(
-                        "Can't find container for \(String(reflecting: Value.self)) to \(String(reflecting: EnclosingType.self))"
-                    )
+                    Macaroni.logger.deathTrap("Can't find container for \(String(describing: Value.self))\(alternative.map { ":\($0.name)" } ?? "") to \(String(describing: EnclosingType.self))")
                 }
 
-                let alternative = instance[keyPath: storageKeyPath].alternative
                 let value: Value = findPolicy.resolve(for: instance, option: alternative?.name)
                 instance[keyPath: storageKeyPath].storage = value
                 return value

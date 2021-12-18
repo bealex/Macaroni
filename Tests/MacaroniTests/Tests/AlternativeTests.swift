@@ -49,8 +49,8 @@ class AlternativeTests: BaseTestCase {
         let objectOne = TestInjectedClassOne(property: nil)
 
         container = Container()
-        Container.policy = SingletonContainer(container)
-        addTeardownBlock { Container.policy = UninitializedContainer() }
+        Container.lookupPolicy = SingletonContainer(container)
+        addTeardownBlock { Container.lookupPolicy = nil }
         container.register { () -> TestInjectedProtocol in objectDefault }
         container.register(alternative: .one) { () -> TestInjectedProtocol in objectOne }
 

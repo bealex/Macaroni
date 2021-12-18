@@ -18,10 +18,12 @@ public protocol MacaroniLogger {
 }
 
 extension MacaroniLogger {
+    @inlinable
     func debug(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
         log(message, level: .debug, file: file, function: function, line: line)
     }
 
+    @inlinable
     func deathTrap(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) -> Never {
         log(message, level: .error, file: file, function: function, line: line)
         die()

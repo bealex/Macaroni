@@ -9,6 +9,18 @@
 
 import Foundation
 
+public extension ContainerLookupPolicy where Self == SingletonContainer {
+    static func singleton(_ container: Container) -> ContainerLookupPolicy {
+        SingletonContainer(container)
+    }
+}
+
+public extension ContainerLookupPolicy where Self == EnclosingTypeContainer {
+    static func enclosingType(default: Container? = nil) -> ContainerLookupPolicy {
+        EnclosingTypeContainer(default: `default`)
+    }
+}
+
 public class SingletonContainer: ContainerLookupPolicy {
     private let container: Container
 
@@ -18,7 +30,7 @@ public class SingletonContainer: ContainerLookupPolicy {
 
     public func container<EnclosingType>(
         for instance: EnclosingType,
-        file: String = #fileID, function: String = #function, line: UInt = #line
+        file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) -> Container? {
         container
     }
@@ -37,7 +49,7 @@ public class EnclosingTypeContainer: ContainerLookupPolicy {
 
     public func container<EnclosingType>(
         for instance: EnclosingType,
-        file: String = #fileID, function: String = #function, line: UInt = #line
+        file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) -> Container? {
         (instance as? Containerable)?.container
     }

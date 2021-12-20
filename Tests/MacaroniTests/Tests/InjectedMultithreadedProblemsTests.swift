@@ -34,7 +34,7 @@ class InjectedMultithreadedProblemsTests: XCTestCase {
         let testString = "Injected String"
 
         var container: Container? = Container()
-        Container.lookupPolicy = SingletonContainer(container!)
+        Container.lookupPolicy = .singleton(container!)
         container?.register { () -> String in testString }
 
         let injectInto = InjectInto()
@@ -48,7 +48,7 @@ class InjectedMultithreadedProblemsTests: XCTestCase {
         let testString = "Injected String"
 
         var container: Container? = Container()
-        Container.lookupPolicy = SingletonContainer(container!)
+        Container.lookupPolicy = .singleton(container!)
         container?.register { () -> String? in testString }
 
         let injectInto = InjectIntoWeakly()

@@ -12,11 +12,5 @@ import Foundation
 public enum MacaroniError: Error {
     /// No resolvers was found for the type.
     case noResolver
-    /// Container.policy is not initialized.
-    case noContainerLookupPolicy
-    /// Object does not implement Containerable protocol.
-    case notContainerable(enclosingTypeName: String)
-    /// Containerable object does not contain Container.
-    case noContainerFound(forEnclosingType: String)
 }
 

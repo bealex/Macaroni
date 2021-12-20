@@ -31,7 +31,7 @@ Current version is v2.x
 // Create container
 let container = Container()
 // Set it as a singleton
-Container.policy = SingletonContainer(container)
+Container.policy = .singleton(container)
 // Add service implementations into the container
 let myService = MyServiceImplementation()
 container.register { () -> MyService in myService }
@@ -183,10 +183,10 @@ Using `container` parameters shows that initialization can happen right away.
 ## Container lookup Policies
 
 There are three policies of container selection for properties of specific enclosing object:
- - service locator style. It is called `SingletonContainer`, and can be set up like this: `Container.policy = SingletonContainer(myContainer)`.
+ - service locator style. It is called `singleton`, and can be set up like this: `Container.policy = .singleton(myContainer)`.
  - enclosing object based. This policy implies, that every enclosing type implements `Containerable`
-   protocol that defines `Container` for the object. You can set it up with `EnclosingTypeContainer(default:)`.
- - custom. If you want to control container finding yourself and no other options suit you, you can implement `ContainerFindable` yourself.
+   protocol that defines `Container` for the object. You can set it up with `.enclosingType(default:)`.
+ - custom. If you want to control container finding yourself and no other options suit you, you can implement `ContainerLookupPolicy` yourself.
 
 ## Per Module Injection
 

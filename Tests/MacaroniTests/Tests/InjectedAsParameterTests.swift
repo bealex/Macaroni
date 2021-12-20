@@ -28,7 +28,7 @@ class InjectedAsParameterTests: BaseTestCase {
     override func setUp() {
         container = Container()
         container.register { () -> String in testStringValue }
-        Container.lookupPolicy = SingletonContainer(container)
+        Container.lookupPolicy = .singleton(container)
     }
 
     override func tearDown() {

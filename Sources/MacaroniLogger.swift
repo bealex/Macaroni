@@ -13,20 +13,20 @@ public enum MacaroniLoggingLevel: Equatable {
 }
 
 public protocol MacaroniLogger {
-    func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: UInt)
-    func die() -> Never
+    func log(_ message: String, level: MacaroniLoggingLevel, file: StaticString, function: String, line: UInt)
+    func die(_ message: String, file: StaticString, function: String, line: UInt) -> Never
 }
 
 extension MacaroniLogger {
     @inlinable
-    func debug(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
+    func debug(_ message: String, file: StaticString = #fileID, function: String = #function, line: UInt = #line) {
         log(message, level: .debug, file: file, function: function, line: line)
     }
 
     @inlinable
-    func deathTrap(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) -> Never {
+    func die(_ message: String, file: StaticString = #fileID, function: String = #function, line: UInt = #line) -> Never {
         log(message, level: .error, file: file, function: function, line: line)
-        die()
+        die(message, file: file, function: function, line: line)
     }
 }
 
@@ -34,7 +34,7 @@ public final class SimpleMacaroniLogger: MacaroniLogger {
     public init() {
     }
 
-    public func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: UInt) {
+    public func log(_ message: String, level: MacaroniLoggingLevel, file: StaticString, function: String, line: UInt) {
         let levelString: String
         switch level {
             case .debug: levelString = "👣"
@@ -43,8 +43,8 @@ public final class SimpleMacaroniLogger: MacaroniLogger {
         print("\(levelString) \(file):\(line) \(message)")
     }
 
-    public func die() -> Never {
-        fatalError("Fatal error occurred during dependency resolving.")
+    public func die(_ message: String, file: StaticString, function: String, line: UInt) -> Never {
+        fatalError("Fatal error occurred during dependency resolving: \(message)", file: file, line: line)
     }
 }
 
@@ -52,10 +52,10 @@ public final class DisabledMacaroniLogger: MacaroniLogger {
     public init() {
     }
 
-    public func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: UInt) {}
+    public func log(_ message: String, level: MacaroniLoggingLevel, file: StaticString, function: String, line: UInt) {}
 
-    public func die() -> Never {
-        fatalError("Fatal error occurred during dependency resolving.")
+    public func die(_ message: String, file: StaticString, function: String, line: UInt) -> Never {
+        fatalError("Fatal error occurred during dependency resolving: \(message)", file: file, line: line)
     }
 }
 

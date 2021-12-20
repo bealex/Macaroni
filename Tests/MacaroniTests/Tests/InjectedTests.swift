@@ -55,7 +55,7 @@ class InjectedTests: BaseTestCase {
         let container = Container()
         container.register { (_) -> String in testStringValue }
         container.register { () -> MyService in MyServiceImplementation() }
-        Container.lookupPolicy = SingletonContainer(container)
+        Container.lookupPolicy = .singleton(container)
         addTeardownBlock { Container.lookupPolicy = nil }
     }
 

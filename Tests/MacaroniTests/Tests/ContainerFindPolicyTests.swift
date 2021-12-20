@@ -65,7 +65,7 @@ class ContainerFindPolicyTests: BaseTestCase {
     func testSingletonPolicyInClass() {
         let container = Container()
         container.register { [self] () -> String in testString }
-        Container.lookupPolicy = SingletonContainer(container)
+        Container.lookupPolicy = .singleton(container)
 
         let instance = ToInjectClass()
         XCTAssertTrue(instance.property == testString)
@@ -74,7 +74,7 @@ class ContainerFindPolicyTests: BaseTestCase {
     func testSingletonPolicyInStruct() {
         let container = Container()
         container.register { [self] () -> String in testString }
-        Container.lookupPolicy = SingletonContainer(container)
+        Container.lookupPolicy = .singleton(container)
 
         let instance = ToInjectStruct()
         waitForDeathTrap(description: "No Resolve Policy (struct)") {
@@ -85,7 +85,7 @@ class ContainerFindPolicyTests: BaseTestCase {
     func testFromEnclosedObjectPolicyFail() {
         let container = Container()
         container.register { [self] () -> String in testString }
-        Container.lookupPolicy = EnclosingTypeContainer()
+        Container.lookupPolicy = .enclosingType()
 
         let instance = ToInjectClass()
         waitForDeathTrap(description: "From enclosed object policy fail") {
@@ -96,7 +96,7 @@ class ContainerFindPolicyTests: BaseTestCase {
     func testFromEnclosedObjectPolicyWithContainer() {
         let container = Container()
         container.register { [self] () -> String in testString }
-        Container.lookupPolicy = EnclosingTypeContainer()
+        Container.lookupPolicy = .enclosingType()
 
         let instance = ToInjectClassContainerable(container: container)
         XCTAssertTrue(instance.property == testString)

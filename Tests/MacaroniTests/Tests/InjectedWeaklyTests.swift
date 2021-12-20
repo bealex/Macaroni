@@ -24,7 +24,7 @@ class InjectedWeaklyTests: BaseTestCase {
     static let container = Container()
 
     override class func setUp() {
-        Container.lookupPolicy = SingletonContainer(container)
+        Container.lookupPolicy = .singleton(container)
     }
 
     override class func tearDown() {

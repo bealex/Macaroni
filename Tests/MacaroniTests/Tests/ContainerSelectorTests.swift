@@ -23,20 +23,19 @@ class ContainerSelectorTests: BaseTestCase {
         var string: String
     }
 
-    public class CustomContainer: ContainerLookupPolicy {
+    class CustomContainer: ContainerLookupPolicy {
         private let container1: Container
         private let container2: Container
         private let defaultContainer: Container
 
-        public init(container1: Container, container2: Container, defaultContainer: Container) {
+        init(container1: Container, container2: Container, defaultContainer: Container) {
             self.container1 = container1
             self.container2 = container2
             self.defaultContainer = defaultContainer
         }
 
-        public func container<EnclosingType>(
-            for instance: EnclosingType,
-            file: String = #fileID, function: String = #function, line: UInt = #line
+        func container<EnclosingType>(
+            for instance: EnclosingType, file: StaticString = #fileID, function: String = #function, line: UInt = #line
         ) -> Container? {
             switch instance {
                 case is MyController1: return container1
@@ -55,7 +54,6 @@ class ContainerSelectorTests: BaseTestCase {
         let container2 = Container()
         container1.register { () -> String in checkStringScope1 }
         container2.register { () -> String in checkStringScope2 }
-
         Container.lookupPolicy = CustomContainer(container1: container1, container2: container2, defaultContainer: defaultContainer)
         addTeardownBlock { Container.lookupPolicy = nil }
 

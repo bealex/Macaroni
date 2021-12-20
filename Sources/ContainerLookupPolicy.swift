@@ -7,8 +7,8 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
-public protocol ContainerLookupPolicy {
-    func container<EnclosingType>(for instance: EnclosingType, file: String, function: String, line: UInt) -> Container?
+public protocol ContainerLookupPolicy: AnyObject {
+    func container<EnclosingType>(for instance: EnclosingType, file: StaticString, function: String, line: UInt) -> Container?
 }
 
 public extension Container {
@@ -18,11 +18,11 @@ public extension Container {
 extension ContainerLookupPolicy {
     func resolve<Value, EnclosingType>(
         for instance: EnclosingType, option: String? = nil,
-        file: String = #fileID, function: String = #function, line: UInt = #line
+        file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) -> Value {
         guard let container = container(for: instance, file: file, function: function, line: line) else {
             let enclosingType = String(reflecting: instance.self)
-            Macaroni.logger.deathTrap("Can't find container in \"\(enclosingType)\" object")
+            Macaroni.logger.die("Can't find container in \"\(enclosingType)\" object", file: file, function: function, line: line)
         }
 
         let value: Value
@@ -34,7 +34,7 @@ extension ContainerLookupPolicy {
             } catch {
                 let valueType = String(reflecting: Value.self)
                 let enclosingType = String(reflecting: instance.self)
-                Macaroni.logger.deathTrap("Can't find resolver for \"\(valueType)\" type in \"\(enclosingType)\" object")
+                Macaroni.logger.die("Can't find resolver for \"\(valueType)\" type in \"\(enclosingType)\" object")
             }
         }
         return value

@@ -6,9 +6,9 @@ This document contains only short feature and update descriptions. Please refer 
 
 In this version main updates are:
  - change in `Container.policy`. It is more configurable now, because it is not an enum, but a protocol `ContainerFindable`.
-   Old behavior is recreated in `SingletonContainer`, `EnclosingTypeContainer`. Custom policy removed, please
+   Old behavior is recreated in `.singleton(...)`, `.enclosingType`. Custom policy removed, please
    create your own implementation for that.
- - `@Injected` has two options now (`captureContainerLookupNow` parameter):
+ - `@Injected` has two options now (`captureContainerLookupOnInit` parameter):
    - old one, when container is being searched lazily, on first access. Container.policy is being accessed for that
      and container is being looked up by it.
    - new one, when container lookup policy is being captured when injected property is created. Container is still

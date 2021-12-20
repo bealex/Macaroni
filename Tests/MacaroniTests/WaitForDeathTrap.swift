@@ -18,10 +18,10 @@ class BaseTestCase: XCTestCase {
             self.deathHandler = deathHandler
         }
 
-        func log(_ message: String, level: MacaroniLoggingLevel, file: String, function: String, line: UInt) {
+        func log(_ message: String, level: MacaroniLoggingLevel, file: StaticString, function: String, line: UInt) {
         }
 
-        func die() -> Never {
+        func die(_ message: String, file: StaticString, function: String, line: UInt) -> Never {
             deathHandler()
             while true { Thread.sleep(forTimeInterval: 1000) /* hang here */ }
         }

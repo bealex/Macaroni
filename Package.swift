@@ -9,7 +9,6 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
-
 import PackageDescription
 
 let package = Package(

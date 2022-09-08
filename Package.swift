@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 
 //
 // Package.swift
@@ -20,6 +20,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "Macaroni", dependencies: [], path: "Sources"),
+
         .testTarget(name: "MacaroniTests", dependencies: ["Macaroni"]),
     ],
     swiftLanguageVersions: [.v5]

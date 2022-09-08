@@ -7,36 +7,22 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
-public protocol ContainerLookupPolicy: AnyObject {
-    func container<EnclosingType>(for instance: EnclosingType, file: StaticString, function: String, line: UInt) -> Container?
-}
-
 public extension Container {
+    /// This property is being used to find out container search policy.
+    /// Please set it up before any @Injected (and others) property wrappers are used.
     static var lookupPolicy: ContainerLookupPolicy!
 }
 
-extension ContainerLookupPolicy {
-    func resolve<Value, EnclosingType>(
-        for instance: EnclosingType, option: String? = nil,
-        file: StaticString = #fileID, function: String = #function, line: UInt = #line
-    ) -> Value {
-        guard let container = container(for: instance, file: file, function: function, line: line) else {
-            let enclosingType = String(reflecting: instance.self)
-            Macaroni.logger.die("Can't find container in \"\(enclosingType)\" object", file: file, function: function, line: line)
-        }
-
-        let value: Value
-        do {
-            value = try container.resolve(parameter: instance, alternative: option)
-        } catch {
-            do {
-                value = try container.resolve(alternative: option)
-            } catch {
-                let valueType = String(reflecting: Value.self)
-                let enclosingType = String(reflecting: instance.self)
-                Macaroni.logger.die("Can't find resolver for \"\(valueType)\" type in \"\(enclosingType)\" object")
-            }
-        }
-        return value
-    }
+/// ContainerLookupPolicy is a protocol that can control, how container for an injection is being looked up, if property wrapper is used.
+/// For now the only parameter that you can use for that is an instance of a reference type, where injection is happening.
+public protocol ContainerLookupPolicy: AnyObject {
+    /// Implement this to be able to look up for the container. For examples see [ContainerFindable.Implementations.swift]
+    /// (ContainerFindable.Implementations.swift)
+    /// - Parameters:
+    ///   - instance: instance of a reference type injection will happen.
+    ///   - file: call originating file, used for logging
+    ///   - function: call originating function, used for logging
+    ///   - line: call originating line, used for logging
+    /// - Returns: Container that will be used for the injection (if any).
+    func container<EnclosingType>(for instance: EnclosingType, file: StaticString, function: String, line: UInt) -> Container?
 }

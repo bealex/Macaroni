@@ -32,6 +32,7 @@ Current version is v2.x
 let container = Container()
 // Set it as a singleton
 Container.policy = .singleton(container)
+
 // Add service implementations into the container
 let myService = MyServiceImplementation()
 container.register { () -> MyService in myService }
@@ -139,7 +140,7 @@ Eager injection from specific container:
 Starting from Swift 5.5 we can use property wrappers for function parameters too. Here is the function declaration:
 
 ```swift
-func foo(@Injected service: MyService) { ... }
+func foo(@Injected service: MyService) { /* Use service here */ }
 ```
 
 And its call using default instance:
@@ -223,8 +224,8 @@ By default, Macaroni will log simple events: containers creation and resolvers r
 
 ```swift
 class MyMacaroniLogger: MacaroniLogger {
-    func log(...) { ... }
-    func die() -> Never { ... }
+    func log(/* Parameters */) { /* Logging code */ }
+    func die() -> Never { /* Log and crash */ }
 }
 
 Macaroni.logger = MyMacaroniLogger()

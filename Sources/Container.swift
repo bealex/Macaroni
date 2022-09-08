@@ -9,12 +9,17 @@
 
 import Foundation
 
+public enum MacaroniError: Error {
+    /// No resolvers was found for the type.
+    case noResolver
+}
+
 /// Dependency injection container, that can create objects from their type.
 public final class Container {
-    private static var counter: Int = 1
-
     let name: String
     let parent: Container?
+
+    private static var counter: Int = 1
 
     public init(parent: Container? = nil, name: String? = nil) {
         self.parent = parent
@@ -30,10 +35,34 @@ public final class Container {
     /// What is this parameter, depends on the usage.
     private var typeParametrizedResolvers: [String: (_ parameter: Any) -> Any] = [:]
 
+    private func key<D>(_ type: D.Type, option: String?) -> String {
+        "\(String(reflecting: type))\(option.map { ".\($0)" } ?? "")"
+    }
+
     /// Returns true, if type is resolvable with the container or its parent.
     public func resolvable<D>(_ type: D.Type, option: String? = nil) -> Bool {
         let key = self.key(type, option: option)
         return typeParametrizedResolvers[key] != nil || typeResolvers[key] != nil || (parent?.resolvable(type) ?? false)
+    }
+
+    /// Registers resolving closure for type `D`.
+    public func register<D>(alternative: String? = nil, _ resolver: @escaping () -> D) {
+        typeResolvers[key(D.self, option: alternative)] = resolver
+        let optionalKey = key(Optional<D>.self, option: alternative)
+        if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
+            typeResolvers[optionalKey] = resolver
+        }
+        Macaroni.logger.debug("\(name) is registering resolver for \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
+    }
+
+    /// Registers resolving closure with parameter for type `D`. `@Injected` annotation sends enclosing object as a parameter.
+    public func register<D>(alternative: String? = nil, _ resolver: @escaping (_ parameter: Any) -> D) {
+        typeParametrizedResolvers[key(D.self, option: alternative)] = resolver
+        let optionalKey = key(Optional<D>.self, option: alternative)
+        if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
+            typeParametrizedResolvers[key(Optional<D>.self, option: alternative)] = resolver
+        }
+        Macaroni.logger.debug("\(name) is registering parametrized resolver for \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
     }
 
     /// Returns instance of type `D`, if it is registered.
@@ -61,40 +90,16 @@ public final class Container {
         }
     }
 
-    /// Registers resolving closure for type `D`.
-    public func register<D>(alternative: String? = nil, _ resolver: @escaping () -> D) {
-        typeResolvers[key(D.self, option: alternative)] = resolver
-        let optionalKey = key(Optional<D>.self, option: alternative)
-        if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
-            typeResolvers[optionalKey] = resolver
-        }
-        Macaroni.logger.debug("\(name) is registering resolver for \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
-    }
-
-    /// Registers resolving closure with parameter for type `D`. `@Injected` annotation sends enclosing object as a parameter.
-    public func register<D>(alternative: String? = nil, _ resolver: @escaping (_ parameter: Any) -> D) {
-        typeParametrizedResolvers[key(D.self, option: alternative)] = resolver
-        let optionalKey = key(Optional<D>.self, option: alternative)
-        if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
-            typeParametrizedResolvers[key(Optional<D>.self, option: alternative)] = resolver
-        }
-        Macaroni.logger.debug("\(name) is registering parametrized resolver for \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
-    }
-
     /// Removes all resolvers.
     public func cleanup() {
         typeResolvers = [:]
         typeParametrizedResolvers = [:]
         Macaroni.logger.debug("\(name) cleared")
     }
-
-    private func key<D>(_ type: D.Type, option: String?) -> String {
-        "\(String(reflecting: type))\(option.map { ".\($0)" } ?? "")"
-    }
 }
 
-extension Container {
-    public struct Resolver<Value> {
+public extension Container {
+    struct Resolver<Value> {
         public let container: Container
         public let alternative: String?
 
@@ -113,5 +118,39 @@ extension Container {
     }
 
     /// For using with @Injected wrapper in functions, like this: `foo($parameter: container.resolved)`
-    public func resolved<D>(alternative: String? = nil) -> Resolver<D> { .init(container: self, alternative: alternative) }
+    func resolved<D>(alternative: String? = nil) -> Resolver<D> { .init(container: self, alternative: alternative) }
+}
+
+public extension Container {
+    func register<D>(_ resolver: @escaping () -> D) {
+        register(alternative: Optional<String>.none, resolver)
+    }
+
+    func register<D>(alternative: RegistrationAlternative? = nil, _ resolver: @escaping () -> D) {
+        register(alternative: alternative?.name, resolver)
+    }
+
+    func register<D>(_ resolver: @escaping (_ parameter: Any) -> D) {
+        register(alternative: Optional<String>.none, resolver)
+    }
+
+    func register<D>(alternative: RegistrationAlternative? = nil, _ resolver: @escaping (_ parameter: Any) -> D) {
+        register(alternative: alternative?.name, resolver)
+    }
+
+    func resolve<D>() throws -> D? {
+        try resolve(alternative: Optional<String>.none)
+    }
+
+    func resolve<D>(alternative: RegistrationAlternative? = nil) throws -> D? {
+        try resolve(alternative: alternative?.name)
+    }
+
+    func resolve<D>(parameter: Any) throws -> D? {
+        try resolve(parameter: parameter, alternative: Optional<String>.none)
+    }
+
+    func resolve<D>(parameter: Any, alternative: RegistrationAlternative? = nil) throws -> D? {
+        try resolve(parameter: parameter, alternative: alternative?.name)
+    }
 }

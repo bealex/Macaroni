@@ -7,16 +7,19 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
+/// Logging levels that are used by Macaroni.
 public enum MacaroniLoggingLevel: Equatable {
     case debug
     case error
 }
 
+/// Simple logging protocol. You can implement it to send Macaroni logs to your logging system.
 public protocol MacaroniLogger {
     func log(_ message: String, level: MacaroniLoggingLevel, file: StaticString, function: String, line: UInt)
     func die(_ message: String, file: StaticString, function: String, line: UInt) -> Never
 }
 
+/// Default Macaroni logging methods.
 extension MacaroniLogger {
     @inlinable
     func debug(_ message: String, file: StaticString = #fileID, function: String = #function, line: UInt = #line) {
@@ -30,6 +33,7 @@ extension MacaroniLogger {
     }
 }
 
+/// Default Macaroni logger, that shows everything in the console.
 public final class SimpleMacaroniLogger: MacaroniLogger {
     public init() {
     }
@@ -48,6 +52,7 @@ public final class SimpleMacaroniLogger: MacaroniLogger {
     }
 }
 
+/// Macaroni logger that discards all logging messages.
 public final class DisabledMacaroniLogger: MacaroniLogger {
     public init() {
     }
@@ -60,5 +65,6 @@ public final class DisabledMacaroniLogger: MacaroniLogger {
 }
 
 public enum Macaroni {
+    /// By default logging messages are being pronted in the console.
     public static var logger: MacaroniLogger = SimpleMacaroniLogger()
 }

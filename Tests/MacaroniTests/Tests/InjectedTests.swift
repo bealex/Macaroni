@@ -50,7 +50,24 @@ private struct MyStruct {
     var myProperty: String
 }
 
+private let globalContainer = Container()
+
+private struct MyStructEager {
+    @Injected(container: globalContainer)
+    var myProperty: String
+}
+
 class InjectedTests: BaseTestCase {
+    override class func setUp() {
+        super.setUp()
+        globalContainer.register { () -> String in testStringValue }
+    }
+
+    override class func tearDown() {
+        super.tearDown()
+        globalContainer.cleanup()
+    }
+
     override func setUp() {
         let container = Container()
         container.register { (_) -> String in testStringValue }
@@ -101,5 +118,10 @@ class InjectedTests: BaseTestCase {
         waitForDeathTrap(description: "No value to inject") {
             XCTAssertEqual(testStruct.myProperty, testStringValue)
         }
+    }
+
+    func testStructEagerInjection() {
+        let testStruct = MyStructEager()
+        XCTAssertEqual(testStruct.myProperty, testStringValue)
     }
 }

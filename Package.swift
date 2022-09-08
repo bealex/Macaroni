@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 
 //
 // Package.swift
@@ -8,7 +8,6 @@
 // Copyright © 2021 Alex Babaev. All rights reserved.
 // License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
-
 
 import PackageDescription
 
@@ -20,6 +19,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "Macaroni", dependencies: [], path: "Sources"),
+
         .testTarget(name: "MacaroniTests", dependencies: ["Macaroni"]),
     ],
     swiftLanguageVersions: [.v5]

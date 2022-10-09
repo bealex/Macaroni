@@ -65,6 +65,6 @@ public final class DisabledMacaroniLogger: MacaroniLogger {
 }
 
 public enum Macaroni {
-    /// By default logging messages are being pronted in the console.
+    /// By default logging messages are being printed in the console.
     public static var logger: MacaroniLogger = SimpleMacaroniLogger()
 }

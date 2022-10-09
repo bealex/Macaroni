@@ -35,39 +35,45 @@ public final class Container {
     /// What is this parameter, depends on the usage.
     private var typeParametrizedResolvers: [String: (_ parameter: Any) -> Any] = [:]
 
-    private func key<D>(_ type: D.Type, option: String?) -> String {
-        "\(String(reflecting: type))\(option.map { ".\($0)" } ?? "")"
+    private func key<D>(_ type: D.Type, alternative: String?) -> String {
+        "\(String(reflecting: type))\(alternative.map { ".\($0)" } ?? "")"
     }
 
     /// Returns true, if type is resolvable with the container or its parent.
-    public func resolvable<D>(_ type: D.Type, option: String? = nil) -> Bool {
-        let key = self.key(type, option: option)
-        return typeParametrizedResolvers[key] != nil || typeResolvers[key] != nil || (parent?.resolvable(type) ?? false)
+    public func isResolvable<D>(_ type: D.Type, alternative: String? = nil) -> Bool {
+        let key = self.key(type, alternative: alternative)
+        return typeParametrizedResolvers[key] != nil || typeResolvers[key] != nil || (parent?.isResolvable(type) ?? false)
     }
 
     /// Registers resolving closure for type `D`.
     public func register<D>(alternative: String? = nil, _ resolver: @escaping () -> D) {
-        typeResolvers[key(D.self, option: alternative)] = resolver
-        let optionalKey = key(Optional<D>.self, option: alternative)
+        let nonOptionalKey = key(D.self, alternative: alternative)
+        typeResolvers[nonOptionalKey] = resolver
+        Macaroni.logger.debug("\(name) is registering resolver for \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
+
+        let optionalKey = key(Optional<D>.self, alternative: alternative)
         if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
             typeResolvers[optionalKey] = resolver
+            Macaroni.logger.debug("\(name) is registering resolver for \(String(describing: Optional<D>.self))\(alternative.map { "/\($0)" } ?? "")")
         }
-        Macaroni.logger.debug("\(name) is registering resolver for \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
     }
 
     /// Registers resolving closure with parameter for type `D`. `@Injected` annotation sends enclosing object as a parameter.
     public func register<D>(alternative: String? = nil, _ resolver: @escaping (_ parameter: Any) -> D) {
-        typeParametrizedResolvers[key(D.self, option: alternative)] = resolver
-        let optionalKey = key(Optional<D>.self, option: alternative)
-        if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
-            typeParametrizedResolvers[key(Optional<D>.self, option: alternative)] = resolver
-        }
+        let nonOptionalKey = key(D.self, alternative: alternative)
+        typeParametrizedResolvers[nonOptionalKey] = resolver
         Macaroni.logger.debug("\(name) is registering parametrized resolver for \(String(describing: D.self))\(alternative.map { "/\($0)" } ?? "")")
+
+        let optionalKey = key(Optional<D>.self, alternative: alternative)
+        if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
+            typeParametrizedResolvers[optionalKey] = resolver
+            Macaroni.logger.debug("\(name) is registering parametrized resolver for \(String(describing: Optional<D>.self))\(alternative.map { "/\($0)" } ?? "")")
+        }
     }
 
     /// Returns instance of type `D`, if it is registered.
     public func resolve<D>(alternative: String? = nil) throws -> D {
-        let key = self.key(D.self, option: alternative)
+        let key = self.key(D.self, alternative: alternative)
         if let resolver = typeResolvers[key] {
             return resolver() as! D
         } else if let parent = parent {
@@ -80,7 +86,7 @@ public final class Container {
     /// Returns instance of type `D`, if it is registered. Sends `parameter` to the resolver.
     /// For example, parameter can be a class name that encloses value that needs to be injected.
     public func resolve<D>(parameter: Any, alternative: String? = nil) throws -> D {
-        let key = self.key(D.self, option: alternative)
+        let key = self.key(D.self, alternative: alternative)
         if let resolver = typeParametrizedResolvers[key] {
             return resolver(parameter) as! D
         } else if let parent = parent {
@@ -113,7 +119,7 @@ public extension Container {
         }
 
         public func resolvable(_ type: Value.Type, option: String? = nil) -> Bool {
-            container.resolvable(Value.self)
+            container.isResolvable(Value.self)
         }
     }
 

@@ -36,22 +36,22 @@ private enum MyContainerHolder {
 }
 
 private class MyController {
-    @Injected(container: MyContainerHolder.container)
+    @Injected(.immediate(MyContainerHolder.container))
     var myService: MyService
 }
 
 private class MyControllerWrongInjectedType {
-    @Injected(container: MyContainerHolder.container)
+    @Injected(.immediate(MyContainerHolder.container))
     var myService: MyServiceImplementation
 }
 
 private class MyControllerNilInjected {
-    @Injected(container: MyContainerHolder.container)
+    @Injected(.immediate(MyContainerHolder.container))
     var myValue: Int
 }
 
 private class MyControllerParametrizedInjected {
-    @Injected(container: MyContainerHolder.container)
+    @Injected(.immediate(MyContainerHolder.container))
     var myValue: String
 }
 

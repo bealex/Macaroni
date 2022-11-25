@@ -118,7 +118,7 @@ public extension Container {
             try container.resolve(alternative: alternative)
         }
 
-        public func resolvable(_ type: Value.Type, option: String? = nil) -> Bool {
+        public func isResolvable(_ type: Value.Type, option: String? = nil) -> Bool {
             container.isResolvable(Value.self)
         }
     }

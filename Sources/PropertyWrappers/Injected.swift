@@ -28,6 +28,15 @@ public struct Injected<Value> {
         }
     }
 
+    public enum InitializationKind {
+        /// Will find container and resolve the value on first access. Useful for "late initialization".
+        case lazily
+        /// Will capture container when initializing, resolve value on first access. If container is specified, it is used for resolve.
+        case fromContainer(Container? = nil)
+        /// Will capture container when initializing and resolve the value on initializing. If container is specified, it is used for resolve.
+        case immediate(Container? = nil)
+    }
+
     public var wrappedValue: Value {
         get {
             if let value = storage {
@@ -49,28 +58,34 @@ public struct Injected<Value> {
 
     // Is used for class property injection. Lazy initialization if container is not present, eager otherwise.
     public init(
-        alternative: RegistrationAlternative? = nil, container: Container? = nil, captureContainerLookupOnInit: Bool = true,
+        _ initialization: InitializationKind = .fromContainer(),
+        alternative: RegistrationAlternative? = nil,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) {
         self.alternative = alternative
-        if let container = container {
-            // eager initialization
-            projectedValue = container.resolved(alternative: alternative?.name)
-            resolveRightNowIfPossible(file: file, function: function, line: line)
-            Macaroni.logger.debug("Injecting (eager from container): \(String(describing: Value.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
-        } else {
-            // lazy initialization, wrapped value will be determined using subscript.
-            projectedValue = Container.alwaysFailResolver()
-            if let container = container {
-                findPolicyCapture = .onInitialization(.singleton(container))
-            } else if captureContainerLookupOnInit {
-                if let policy = Container.lookupPolicy {
+        switch initialization {
+            case .immediate(let container):
+                projectedValue = Container.alwaysFailResolver()
+                guard let container = container ?? Container.lookupPolicy?.container(for: Self.self, file: file, function: function, line: line) else {
+                    Macaroni.logger.die("Can't find container for Injected immediateResolve", file: file, function: function, line: line)
+                }
+
+                projectedValue = container.resolved(alternative: alternative?.name)
+                resolveRightNowIfPossible(file: file, function: function, line: line)
+            case .fromContainer(let container):
+                if let container = container {
+                    projectedValue = Container.alwaysFailResolver()
+                    findPolicyCapture = .onInitialization(.singleton(container))
+                } else if let policy = Container.lookupPolicy {
+                    projectedValue = Container.alwaysFailResolver()
                     findPolicyCapture = .onInitialization(policy)
                 } else {
                     Macaroni.logger.die("Container.lookupPolicy is not initialized", file: file, function: function, line: line)
                 }
-            }
-            Macaroni.logger.debug("Injecting (lazy): \(String(describing: Value.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
+            case .lazily:
+                projectedValue = Container.alwaysFailResolver()
+                findPolicyCapture = .onFirstUsage
+                Macaroni.logger.debug("Injecting (lazy): \(String(describing: Value.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
         }
     }
 
@@ -97,14 +112,14 @@ public struct Injected<Value> {
         // TODO: Possibly allow usage of `.singleton` and/or `.enclosingType` container search policies
         do {
             storage = try projectedValue.resolve()
+            Macaroni.logger.debug("Injecting (eager from container): \(String(describing: Value.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
         } catch {
-            if projectedValue.resolvable(Value.self) {
+            if projectedValue.isResolvable(Value.self) {
                 Macaroni.logger.die("Parametrized resolvers are not supported for greedy injection (\"\(String(describing: Value.self))\").", file: file, function: function, line: line)
             } else {
                 Macaroni.logger.die("Dependency \"\(String(describing: Value.self))\" does not have a resolver", file: file, function: function, line: line)
             }
         }
-        Macaroni.logger.debug("Injecting (eager, container): \(String(describing: Value.self))", file: file, function: function, line: line)
     }
 
     /// Is called when injected into a class property and being accessed.

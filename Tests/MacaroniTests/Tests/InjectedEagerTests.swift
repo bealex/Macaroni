@@ -36,28 +36,33 @@ private enum MyContainerHolder {
 }
 
 private class MyController {
-    @Injected(.immediate(MyContainerHolder.container))
+    @Injected(.resolvingOnInit(from: MyContainerHolder.container))
     var myService: MyService
 }
 
 private class MyControllerWrongInjectedType {
-    @Injected(.immediate(MyContainerHolder.container))
+    @Injected(.resolvingOnInit(from: MyContainerHolder.container))
     var myService: MyServiceImplementation
 }
 
 private class MyControllerNilInjected {
-    @Injected(.immediate(MyContainerHolder.container))
+    @Injected(.resolvingOnInit(from: MyContainerHolder.container))
     var myValue: Int
 }
 
 private class MyControllerParametrizedInjected {
-    @Injected(.immediate(MyContainerHolder.container))
+    @Injected(.resolvingOnInit(from: MyContainerHolder.container))
     var myValue: String
 }
 
 private class MyControllerInjectedWithResolved {
     @Injected(resolver: MyContainerHolder.container.resolved())
     var property: ToInject
+}
+
+private class MyControllerInjectedWithWrapped {
+    @Injected
+    var property: ToInject = try! MyContainerHolder.container.resolve()
 }
 
 class InjectedEagerTests: BaseTestCase {
@@ -86,6 +91,11 @@ class InjectedEagerTests: BaseTestCase {
 
     func testInjectedWithResolved() {
         let testObject = MyControllerInjectedWithResolved()
+        XCTAssertEqual(testObject.property.value, testStringValue)
+    }
+
+    func testInjectedWithWrapped() {
+        let testObject = MyControllerInjectedWithWrapped()
         XCTAssertEqual(testObject.property.value, testStringValue)
     }
 }

@@ -23,7 +23,9 @@ Please use [Swift Package Manager](https://swift.org/package-manager/).
 Repository address: `git@github.com:bealex/Macaroni.git` or `https://github.com/bealex/Macaroni.git`. 
 Name of the package is `Macaroni`.
 
-Current version is v3.x
+### Current version
+
+Current version is v4.x
     
 ## 30-second tutorial
 
@@ -40,9 +42,10 @@ container.register { () -> MyService in myService }
 // Use it in code.
 let myService: MyService = container.resolve()
 
-// Use it with property wrapper.
+// Or use it with property wrapper.
 class MyClass {
-   @Injected var service: MyService
+   @Injected
+   var service: MyService
 }
 ```
 
@@ -79,36 +82,33 @@ container.register { myService }
 And then we can inject this value like this:
 
 ```swift
-@Injected
-var myService: MyServiceImplementation
+class MyClass {
+    @Injected
+    var myService: MyServiceImplementation
+}
 ```
 
-To be able to use it with the protocol like this:
+Usually we need to be able to use it with the protocol like this: `var myService: MyService`, not with the implementation 
+type (`var myService: MyServiceImplementation`). For that we need to tell `Container`, that if it is being asked of `MyService`, 
+it should inject this specific object. It can be done using one of two options:
 
 ```swift
-@Injected
-var myService: MyService
-```
-
-we need to tell `Container`, that if it is being asked of `MyService`, it should inject this specific implementation. 
-It can be done like this:
-
-```swift
+// 1. 
 // Now myService is of type `MyService` and registration will be
 // typed as `() -> MyService` instead of `() -> MyServiceImplementation`
-let myService: MyService = MyServiceImplementation()
+let myService: MyService /* <- Magic happens here */ = MyServiceImplementation()
 container.register { myService }
 
+// 2.
 // or like this (I prefer this option):
-
 let myService = MyServiceImplementation()
-container.register { () -> MyService in myService }
+container.register { () -> MyService /* <- Magic happens here */ in myService }
 ```
 
 > Please note that injection is happening lazily, not during `MyController` initialization but when `myService` is first accessed.
  
 In the code above, implementation is being created right away. If you want to lazily create objects that 
-sbould be injected, you can use a wrapper like this:
+should be injected, you can use a wrapper like this:
 
 ```swift
 class LazilyInitialized<Type> {
@@ -121,7 +121,6 @@ class LazilyInitialized<Type> {
    }
 }
 
-// resolver stays same
 let willBeInstantiatedOnFirstAccess = LazilyInitialized { MyServiceImplementation() }
 container.register { () -> MyService in willBeInstantiatedOnFirstAccess.value }
 ```
@@ -130,36 +129,50 @@ container.register { () -> MyService in willBeInstantiatedOnFirstAccess.value }
 
 #### Class property injection
 
-Lazy injection from the container, determined by `Container.policy`:
-
 ```swift
+// 1. 
+// Lazy injection from the container that is captured on initialization, determined by `Container.policy`:
 @Injected
+var property: Type
+
+// 2.
+// Lazy injection from the container that is captured on initialization (you specify it):
+@Injected(.capturingContainerOnInit(from: container))
+var property: Type
+
+// 3. 
+// Lazy capturing of the container and resolving:
+@Injected(.lazily)
+var property: Type
+
+// 4.
+// Eager resolving, during the initialization, from the container from `Container.policy`:
+@Injected(.resolvingOnInit())
+var property: Type
+
+// 5.
+// Eager resolving, during the initialization, from the specified container:
+@Injected(.resolvingOnInit(from: container))
 var property: Type
 ```
 
-Lazy injection of an alternative object of the same type from the container, determined by `Container.policy`:
+> Please note that parametrized injection works only when object is being resolved lazily. 
+> Eager injection can only resolve objects by type (and alternative if it is provided).
+> 
+> Also lazy injection can't be used in `structs`, because it needs to modify object after the resolve. 
+        
+#### Resolving several objects with the same type
 
 ```swift
-// create alternative identifier. Strings must be different for different types.
+//    - create alternative identifier. Strings must be different for different types.
 extension RegistrationAlternative {
     static let another: RegistrationAlternative = "another"
 }
-// registration
+//    - registration
 container.register(alternative: .another) { () -> MyService in anotherInstance }
-
-// injection
+//    - injection
 @Injected(alternative: .another)
 var myServiceAlternative: MyService 
-```
-
-Eager (can be used in structs) injection from specific container:
-
-> Please note that parametrized injection will not work in this case. 
-> Object is being injected on enclosing object creation.
-
-```swift
-@Injected(container: container)
-var service: MyService
 ```
 
 #### Function parameter injection
@@ -187,7 +200,7 @@ foo($service: container.resolved(alternative: .another))
 If you need to use object that contains the injected property, you can get from inside registration closure like this:
 
 ```swift
-container.register { enclosingObject -> String in String(describing: enclosing) }
+container.register { enclosing -> String in String(describing: enclosing) }
 ```
 
 > This resolver will be available for lazy injections only.
@@ -197,7 +210,8 @@ container.register { enclosingObject -> String in String(describing: enclosing) 
 When using property wrappers, you can't use `weak` (or `lazy` or `unowned`). If you need that, you can use `@InjecteadWeakly`.
 
 ```swift
-@InjectedWeakly var myService: MyService?
+@InjectedWeakly
+var myService: MyService?
 ```
 
 ## Container lookup Policies

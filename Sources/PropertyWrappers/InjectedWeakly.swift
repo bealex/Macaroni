@@ -9,41 +9,41 @@
 
 /// This wrapper can be used only with classes. You must capture injected object weakly (with [weak object]) in registration closure.
 @propertyWrapper
-public struct InjectedWeakly<Value> {
-    public var wrappedValue: Value? {
+public struct InjectedWeakly<ValueType> {
+    public var wrappedValue: ValueType? {
         get { Macaroni.logger.die("Injecting only works for class enclosing types") }
         // We need setter here so that KeyPaths in subscript were writable.
         set { Macaroni.logger.die("Injecting only works for class enclosing types") }
     }
 
     // We need to strongly handle policy to be able to resolve lazily.
-    private var findPolicyCapture: Injected<Value>.ContainerFindPolicyCapture = .onFirstUsage
+    private var findPolicyCapture: Injected<ValueType>.ContainerFindPolicyCapture = .onFirstUsage
     private var alternative: RegistrationAlternative?
 
     public init(
-        _ initialization: Injected<Value>.InitializationKind = .fromContainer(),
+        _ initialization: Injected<ValueType>.InitializationKind = .capturingContainerOnInit(),
         alternative: RegistrationAlternative? = nil,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) {
         self.alternative = alternative
         switch initialization {
-            case .immediate(let container):
+            case .resolvingOnInit(let container):
                 guard let container = container ?? Container.lookupPolicy.container(for: Self.self, file: file, function: function, line: line) else {
                     Macaroni.logger.die("Can't find container for InjectedWeakly immediateResolve", file: file, function: function, line: line)
                 }
 
                 do {
-                    let storage: Value = try container.resolve()
+                    let storage: ValueType = try container.resolve()
                     self.storage = storage as AnyObject
-                    Macaroni.logger.debug("Injecting (eager from container): \(String(describing: Value.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
+                    Macaroni.logger.debug("Injecting (eager from container): \(String(describing: ValueType.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
                 } catch {
-                    if container.isResolvable(Value.self) {
-                        Macaroni.logger.die("Parametrized resolvers are not supported for greedy injection (\"\(String(describing: Value.self))\").", file: file, function: function, line: line)
+                    if container.isResolvable(ValueType.self) {
+                        Macaroni.logger.die("Parametrized resolvers are not supported for greedy injection (\"\(String(describing: ValueType.self))\").", file: file, function: function, line: line)
                     } else {
-                        Macaroni.logger.die("Dependency \"\(String(describing: Value.self))\" does not have a resolver", file: file, function: function, line: line)
+                        Macaroni.logger.die("Dependency \"\(String(describing: ValueType.self))\" does not have a resolver", file: file, function: function, line: line)
                     }
                 }
-            case .fromContainer(let container):
+            case .capturingContainerOnInit(let container):
                 findPolicyCapture = .onInitialization(container.map(SingletonContainer.init) ?? Container.lookupPolicy)
             case .lazily:
                 findPolicyCapture = .onFirstUsage
@@ -55,12 +55,12 @@ public struct InjectedWeakly<Value> {
 
     public static subscript<EnclosingType>(
         _enclosingInstance instance: EnclosingType,
-        wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingType, Value?>,
+        wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingType, ValueType?>,
         storage storageKeyPath: ReferenceWritableKeyPath<EnclosingType, Self>
-    ) -> Value? {
+    ) -> ValueType? {
         get {
             let enclosingValue = instance[keyPath: storageKeyPath]
-            if enclosingValue.isResolved, let value = enclosingValue.storage as? Value {
+            if enclosingValue.isResolved, let value = enclosingValue.storage as? ValueType {
                 return value
             } else {
                 let alternative = instance[keyPath: storageKeyPath].alternative
@@ -68,7 +68,7 @@ public struct InjectedWeakly<Value> {
                     Macaroni.logger.die("Container selection policy (Macaroni.Container.policy) is not set")
                 }
 
-                if let value: Value? = findPolicy.resolve(for: instance, option: alternative?.name) {
+                if let value: ValueType? = findPolicy.resolve(for: instance, option: alternative?.name) {
                     instance[keyPath: storageKeyPath].isResolved = true
                     instance[keyPath: storageKeyPath].storage = value as AnyObject
                     return value

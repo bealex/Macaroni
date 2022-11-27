@@ -14,7 +14,19 @@ public enum MacaroniError: Error {
     case noResolver
 }
 
-/// Dependency injection container, that can create objects from their type.
+/// Dependency injection container, that can resolve registered objects. Registration is done on type-by-type basis,
+/// so that only one object can be resolved based on its type.
+///
+/// If you need to resolve several objects for one type, you need to use `alternatives`.
+///
+/// Usually if you register `Type`, you can resolve `Type?` and `Type!` as well.
+///
+/// Containers can have a hierarchy. If type is not found in current container, its resolving is delegated to the parent.
+///
+/// Containers have two resolver types. One does not know about anything but the type it is resolving. Another knows
+/// the type of type that contains property that is being resolved.
+///
+/// There is a `@Injected` property wrapper that helps to inject objects into classes (mostly).
 public final class Container {
     let name: String
     let parent: Container?

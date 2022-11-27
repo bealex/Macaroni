@@ -53,7 +53,7 @@ private struct MyStruct {
 private let globalContainer = Container()
 
 private struct MyStructEager {
-    @Injected(.immediate(globalContainer))
+    @Injected(.resolvingOnInit(from: globalContainer))
     var myProperty: String
 }
 

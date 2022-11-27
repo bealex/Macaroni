@@ -1,0 +1,4 @@
+version: 4.0.0
+builder:
+    configs:
+        - documentation_targets: [ Macaroni ]

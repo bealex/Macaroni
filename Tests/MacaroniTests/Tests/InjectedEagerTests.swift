@@ -55,11 +55,6 @@ private class MyControllerParametrizedInjected {
     var myValue: String
 }
 
-private class MyControllerInjectedWithResolved {
-    @Injected(resolver: MyContainerHolder.container.resolved())
-    var property: ToInject
-}
-
 private class MyControllerInjectedWithWrapped {
     @Injected
     var property: ToInject = try! MyContainerHolder.container.resolve()
@@ -87,11 +82,6 @@ class InjectedEagerTests: BaseTestCase {
         waitForDeathTrap(description: "Parametrized injected") {
             _ = MyControllerParametrizedInjected()
         }
-    }
-
-    func testInjectedWithResolved() {
-        let testObject = MyControllerInjectedWithResolved()
-        XCTAssertEqual(testObject.property.value, testStringValue)
     }
 
     func testInjectedWithWrapped() {

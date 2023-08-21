@@ -63,8 +63,3 @@ public final class DisabledMacaroniLogger: MacaroniLogger {
         fatalError("Fatal error occurred during dependency resolving: \(message)", file: file, line: line)
     }
 }
-
-public enum Macaroni {
-    /// By default logging messages are being printed in the console.
-    public static var logger: MacaroniLogger = SimpleMacaroniLogger()
-}

@@ -17,7 +17,7 @@ public struct InjectedWeakly<ValueType> {
     }
 
     // We need to strongly handle policy to be able to resolve lazily.
-    private var findPolicyCapture: Injected<ValueType>.ContainerFindPolicyCapture = .onFirstUsage
+    private var findPolicyCapture: Injected<ValueType>.ContainerCapturePolicy = .onFirstUsage
     private var alternative: RegistrationAlternative?
 
     public init(

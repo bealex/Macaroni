@@ -42,7 +42,7 @@ class InjectedAsParameterTests: BaseTestCase {
             value
         }
 
-        let result = test($value: container.resolved())
+        let result = test($value: .object(self))
         XCTAssertTrue(result == testStringValue)
     }
 

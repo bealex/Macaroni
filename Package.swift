@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.8
 
 //
 // Package.swift
@@ -13,7 +13,7 @@ import PackageDescription
 
 let package = Package(
     name: "Macaroni",
-    platforms: [ .iOS(.v11), .macOS(.v10_14) ],
+    platforms: [ .iOS(.v12), .macOS(.v10_14) ],
     products: [
         .library(name: "Macaroni", targets: [ "Macaroni" ]),
     ],

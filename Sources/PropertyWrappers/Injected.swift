@@ -176,7 +176,7 @@ public struct Injected<ValueType> {
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) -> ValueType {
         Macaroni.logger.debug(
-            "Resolving [\(String(reflecting: ValueType.self)) \(alternative.map { " / \($0)" } ?? "")] in the \(String(reflecting: type(of: enclosingInstance)))",
+            "Resolving [\(String(reflecting: ValueType.self))\(alternative.map { " / \($0)" } ?? "")] in the \(String(reflecting: type(of: enclosingInstance)))",
             file: file, function: function, line: line
         )
         guard let findPolicy else {

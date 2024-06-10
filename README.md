@@ -33,7 +33,7 @@ Current version is v4.x
 // Create the container.
 let container = Container()
 // Set it as a singleton for the simplest service-locator style resolution.
-Container.policy = .singleton(container)
+Container.lookupPolicy = .singleton(container)
 
 // Add service implementations into the container.
 let myService = MyServiceImplementation()
@@ -67,7 +67,7 @@ a `singleton` object to hold all the objects that can be injected.
 
 ```swift
 let container = Container()
-Container.policy = .singleton(container)
+Container.lookupPolicy = .singleton(container)
 ```
 
 To register something inside a container, we register a _resolver_ there. Resolver is a closure that 
@@ -217,7 +217,7 @@ var myService: MyService?
 ## Container lookup Policies
 
 There are three policies of container selection for properties of specific enclosing object:
- - service locator style. It is called `singleton`, and can be set up like this: `Container.policy = .singleton(myContainer)`.
+ - service locator style. It is called `singleton`, and can be set up like this: `Container.lookupPolicy = .singleton(myContainer)`.
  - enclosing object based. This policy implies, that every enclosing type implements `Containerable`
    protocol that defines `Container` for the object. You can set it up with `.enclosingType(default:)`.
  - custom. If you want to control container finding yourself and no other option suits you, you can implement `ContainerLookupPolicy` yourself.
@@ -230,7 +230,7 @@ Write this somewhere in the common module:
 
 ```swift
 protocol ModuleDI: Containerable {}
-Container.policy = EnclosingTypeContainer()
+Container.lookupPolicy = EnclosingTypeContainer()
 ```
 
 And this in each module:

@@ -10,7 +10,7 @@
 public extension Container {
     /// This property is being used to find out container search policy.
     /// Please set it up before any @Injected (and others) property wrappers are used.
-    static var lookupPolicy: ContainerLookupPolicy!
+    static nonisolated(unsafe) var lookupPolicy: ContainerLookupPolicy!
 }
 
 /// ContainerLookupPolicy is a protocol that can control, how container for an injection is being looked up, if property wrapper is used.

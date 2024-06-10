@@ -10,7 +10,7 @@ import Foundation
 
 public enum Macaroni {
     /// By default logging messages are being printed in the console.
-    public static var logger: MacaroniLogger = SimpleMacaroniLogger()
+    public nonisolated(unsafe) static var logger: MacaroniLogger = SimpleMacaroniLogger()
 
     public static func set(lookupPolicy: ContainerLookupPolicy) {
         Container.lookupPolicy = lookupPolicy

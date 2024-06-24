@@ -32,6 +32,7 @@ public final class Container {
     let parent: Container?
 
     private static var counter: Int = 1
+    private let queue: DispatchQueue
 
     public init(
         parent: Container? = nil,
@@ -39,8 +40,9 @@ public final class Container {
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) {
         self.parent = parent
-
         self.name = name ?? "UnnamedContainer.\(Container.counter)"
+        queue = DispatchQueue(label: "container.\(self.name)")
+
         Container.counter += 1
         Macaroni.logger.debug(
             "\(self.name)\(self.parent == nil ? "" : " (parent: \(parent?.name ?? "???"))") created",
@@ -60,8 +62,10 @@ public final class Container {
 
     /// Returns true, if type is resolvable with the container or its parent.
     public func isResolvable<D>(_ type: D.Type, alternative: String? = nil) -> Bool {
-        let key = self.key(type, alternative: alternative)
-        return typeParametrizedResolvers[key] != nil || typeResolvers[key] != nil || (parent?.isResolvable(type) ?? false)
+        queue.sync(flags: .barrier) {
+            let key = self.key(type, alternative: alternative)
+            return typeParametrizedResolvers[key] != nil || typeResolvers[key] != nil || (parent?.isResolvable(type) ?? false)
+        }
     }
 
     /// Registers resolving closure for type `D`.
@@ -70,21 +74,23 @@ public final class Container {
         file: StaticString = #fileID, function: String = #function, line: UInt = #line,
         _ resolver: @escaping () -> D
     ) {
-        let nonOptionalKey = key(D.self, alternative: alternative)
-        typeResolvers[nonOptionalKey] = resolver
+        queue.async { [self] in
+            let nonOptionalKey = key(D.self, alternative: alternative)
+            typeResolvers[nonOptionalKey] = resolver
 
-        let optionalKey = key(Optional<D>.self, alternative: alternative)
-        if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
-            typeResolvers[optionalKey] = resolver
-            Macaroni.logger.debug(
-                "\(name) is registering resolver for \(String(describing: D.self)) and its Optional\(alternative.map { " / \($0)" } ?? "")",
-                file: file, function: function, line: line
-            )
-        } else {
-            Macaroni.logger.debug(
-                "\(name) is registering resolver for \(String(describing: D.self))\(alternative.map { " / \($0)" } ?? "")",
-                file: file, function: function, line: line
-            )
+            let optionalKey = key(Optional<D>.self, alternative: alternative)
+            if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
+                typeResolvers[optionalKey] = resolver
+                Macaroni.logger.debug(
+                    "\(name) is registering resolver for \(String(describing: D.self)) and its Optional\(alternative.map { " / \($0)" } ?? "")",
+                    file: file, function: function, line: line
+                )
+            } else {
+                Macaroni.logger.debug(
+                    "\(name) is registering resolver for \(String(describing: D.self))\(alternative.map { " / \($0)" } ?? "")",
+                    file: file, function: function, line: line
+                )
+            }
         }
     }
 
@@ -94,21 +100,23 @@ public final class Container {
         file: StaticString = #fileID, function: String = #function, line: UInt = #line,
         _ resolver: @escaping (_ parameter: Any) -> D
     ) {
-        let nonOptionalKey = key(D.self, alternative: alternative)
-        typeParametrizedResolvers[nonOptionalKey] = resolver
+        queue.async { [self] in
+            let nonOptionalKey = key(D.self, alternative: alternative)
+            typeParametrizedResolvers[nonOptionalKey] = resolver
 
-        let optionalKey = key(Optional<D>.self, alternative: alternative)
-        if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
-            typeParametrizedResolvers[optionalKey] = resolver
-            Macaroni.logger.debug(
-                "\(name) is registering parametrized resolver for \(String(describing: D.self)) and its Optional\(alternative.map { " / \($0)" } ?? "")",
-                file: file, function: function, line: line
-            )
-        } else {
-            Macaroni.logger.debug(
-                "\(name) is registering parametrized resolver for \(String(describing: D.self))\(alternative.map { " / \($0)" } ?? "")",
-                file: file, function: function, line: line
-            )
+            let optionalKey = key(Optional<D>.self, alternative: alternative)
+            if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
+                typeParametrizedResolvers[optionalKey] = resolver
+                Macaroni.logger.debug(
+                    "\(name) is registering parametrized resolver for \(String(describing: D.self)) and its Optional\(alternative.map { " / \($0)" } ?? "")",
+                    file: file, function: function, line: line
+                )
+            } else {
+                Macaroni.logger.debug(
+                    "\(name) is registering parametrized resolver for \(String(describing: D.self))\(alternative.map { " / \($0)" } ?? "")",
+                    file: file, function: function, line: line
+                )
+            }
         }
     }
 
@@ -117,13 +125,15 @@ public final class Container {
         alternative: String? = nil,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) throws -> D {
-        let key = self.key(D.self, alternative: alternative)
-        if let resolver = typeResolvers[key] {
-            return resolver() as! D
-        } else if let parent = parent {
-            return try parent.resolve(alternative: alternative)
-        } else {
-            throw MacaroniError.noResolver
+        try queue.sync(flags: .barrier) {
+            let key = self.key(D.self, alternative: alternative)
+            if let resolver = typeResolvers[key] {
+                return resolver() as! D
+            } else if let parent = parent {
+                return try parent.resolve(alternative: alternative)
+            } else {
+                throw MacaroniError.noResolver
+            }
         }
     }
 
@@ -134,21 +144,25 @@ public final class Container {
         alternative: String? = nil,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) throws -> D {
-        let key = self.key(D.self, alternative: alternative)
-        if let resolver = typeParametrizedResolvers[key] {
-            return resolver(parameter) as! D
-        } else if let parent = parent {
-            return try parent.resolve(parameter: parameter, alternative: alternative, file: file, function: function, line: line)
-        } else {
-            throw MacaroniError.noResolver
+        try queue.sync(flags: .barrier) {
+            let key = self.key(D.self, alternative: alternative)
+            if let resolver = typeParametrizedResolvers[key] {
+                return resolver(parameter) as! D
+            } else if let parent = parent {
+                return try parent.resolve(parameter: parameter, alternative: alternative, file: file, function: function, line: line)
+            } else {
+                throw MacaroniError.noResolver
+            }
         }
     }
 
     /// Removes all resolvers.
     public func cleanup(file: StaticString = #fileID, function: String = #function, line: UInt = #line) {
-        typeResolvers = [:]
-        typeParametrizedResolvers = [:]
-        Macaroni.logger.debug("\(name) cleared", file: file, function: function, line: line)
+        queue.async { [self] in
+            typeResolvers = [:]
+            typeParametrizedResolvers = [:]
+            Macaroni.logger.debug("\(name) cleared", file: file, function: function, line: line)
+        }
     }
 }
 

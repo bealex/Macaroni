@@ -41,7 +41,7 @@ public final class Container {
     ) {
         self.parent = parent
         self.name = name ?? "UnnamedContainer.\(Container.counter)"
-        queue = DispatchQueue(label: "container.\(self.name)")
+        queue = DispatchQueue(label: "container.\(self.name)", attributes: [ .concurrent ])
 
         Container.counter += 1
         Macaroni.logger.debug(
@@ -62,7 +62,7 @@ public final class Container {
 
     /// Returns true, if type is resolvable with the container or its parent.
     public func isResolvable<D>(_ type: D.Type, alternative: String? = nil) -> Bool {
-        queue.sync(flags: .barrier) {
+        queue.sync {
             let key = self.key(type, alternative: alternative)
             return typeParametrizedResolvers[key] != nil || typeResolvers[key] != nil || (parent?.isResolvable(type) ?? false)
         }
@@ -74,7 +74,7 @@ public final class Container {
         file: StaticString = #fileID, function: String = #function, line: UInt = #line,
         _ resolver: @escaping () -> D
     ) {
-        queue.async { [self] in
+        queue.async(flags: .barrier) { [self] in
             let nonOptionalKey = key(D.self, alternative: alternative)
             typeResolvers[nonOptionalKey] = resolver
 
@@ -100,7 +100,7 @@ public final class Container {
         file: StaticString = #fileID, function: String = #function, line: UInt = #line,
         _ resolver: @escaping (_ parameter: Any) -> D
     ) {
-        queue.async { [self] in
+        queue.async(flags: .barrier) { [self] in
             let nonOptionalKey = key(D.self, alternative: alternative)
             typeParametrizedResolvers[nonOptionalKey] = resolver
 
@@ -125,7 +125,7 @@ public final class Container {
         alternative: String? = nil,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) throws -> D {
-        try queue.sync(flags: .barrier) {
+        try queue.sync {
             let key = self.key(D.self, alternative: alternative)
             if let resolver = typeResolvers[key] {
                 return resolver() as! D
@@ -144,7 +144,7 @@ public final class Container {
         alternative: String? = nil,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) throws -> D {
-        try queue.sync(flags: .barrier) {
+        try queue.sync {
             let key = self.key(D.self, alternative: alternative)
             if let resolver = typeParametrizedResolvers[key] {
                 return resolver(parameter) as! D
@@ -158,7 +158,7 @@ public final class Container {
 
     /// Removes all resolvers.
     public func cleanup(file: StaticString = #fileID, function: String = #function, line: UInt = #line) {
-        queue.async { [self] in
+        queue.async(flags: .barrier) { [self] in
             typeResolvers = [:]
             typeParametrizedResolvers = [:]
             Macaroni.logger.debug("\(name) cleared", file: file, function: function, line: line)

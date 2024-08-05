@@ -30,7 +30,7 @@ import Foundation
 /// @Injected(alternative: .second)
 /// var instance: ...
 /// ```
-public struct RegistrationAlternative: ExpressibleByStringLiteral {
+public struct RegistrationAlternative: ExpressibleByStringLiteral, Sendable {
     /// Name of the registration alternative. Is shown in logs.
     var name: String
 

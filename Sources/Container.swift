@@ -34,6 +34,10 @@ public final class Container {
     private static var counter: Int = 1
     private let queue: DispatchQueue
 
+    /// you can lock container in case it will not be updated anymore.
+    /// This should speed up container access, but remove ability to add new resolvers.
+    private var isLocked: Bool = false
+
     public init(
         parent: Container? = nil,
         name: String? = nil,
@@ -50,6 +54,18 @@ public final class Container {
         )
     }
 
+    public func lock() {
+        queue.sync {
+            isLocked = true
+        }
+    }
+
+    public func unlock() {
+        queue.sync {
+            isLocked = false
+        }
+    }
+
     /// Resolvers that can create object by type.
     private var typeResolvers: [String: () -> Any] = [:]
     /// Resolvers that can create object, based on type and some arbitrary parameter.
@@ -57,7 +73,11 @@ public final class Container {
     private var typeParametrizedResolvers: [String: (_ parameter: Any) -> Any] = [:]
 
     private func key<D>(_ type: D.Type, alternative: String?) -> String {
-        "\(String(reflecting: type))\(alternative.map { ".\($0)" } ?? "")"
+        if let alternative {
+            "\(String(reflecting: type))\(alternative)"
+        } else {
+            String(reflecting: type)
+        }
     }
 
     /// Returns true, if type is resolvable with the container or its parent.
@@ -74,6 +94,8 @@ public final class Container {
         file: StaticString = #fileID, function: String = #function, line: UInt = #line,
         _ resolver: @escaping () -> D
     ) {
+        guard !isLocked else { return assertionFailure("Container is locked") }
+
         queue.async(flags: .barrier) { [self] in
             let nonOptionalKey = key(D.self, alternative: alternative)
             typeResolvers[nonOptionalKey] = resolver
@@ -100,6 +122,8 @@ public final class Container {
         file: StaticString = #fileID, function: String = #function, line: UInt = #line,
         _ resolver: @escaping (_ parameter: Any) -> D
     ) {
+        guard !isLocked else { return assertionFailure("Container is locked") }
+
         queue.async(flags: .barrier) { [self] in
             let nonOptionalKey = key(D.self, alternative: alternative)
             typeParametrizedResolvers[nonOptionalKey] = resolver
@@ -125,15 +149,15 @@ public final class Container {
         alternative: String? = nil,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) throws -> D {
-        try queue.sync {
-            let key = self.key(D.self, alternative: alternative)
-            if let resolver = typeResolvers[key] {
-                return resolver() as! D
-            } else if let parent = parent {
-                return try parent.resolve(alternative: alternative)
-            } else {
-                throw MacaroniError.noResolver
-            }
+        let key = self.key(D.self, alternative: alternative)
+
+        let resolver = isLocked ? self.typeResolvers[key] : queue.sync { self.typeResolvers[key] }
+        if let resolver {
+            return resolver() as! D
+        } else if let parent = self.parent {
+            return try parent.resolve(alternative: alternative)
+        } else {
+            throw MacaroniError.noResolver
         }
     }
 
@@ -144,15 +168,15 @@ public final class Container {
         alternative: String? = nil,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) throws -> D {
-        try queue.sync {
-            let key = self.key(D.self, alternative: alternative)
-            if let resolver = typeParametrizedResolvers[key] {
-                return resolver(parameter) as! D
-            } else if let parent = parent {
-                return try parent.resolve(parameter: parameter, alternative: alternative, file: file, function: function, line: line)
-            } else {
-                throw MacaroniError.noResolver
-            }
+        let key = self.key(D.self, alternative: alternative)
+        let resolver = isLocked ? self.typeParametrizedResolvers[key] : queue.sync { self.typeParametrizedResolvers[key] }
+
+        if let resolver {
+            return resolver(parameter) as! D
+        } else if let parent = self.parent {
+            return try parent.resolve(parameter: parameter, alternative: alternative, file: file, function: function, line: line)
+        } else {
+            throw MacaroniError.noResolver
         }
     }
 

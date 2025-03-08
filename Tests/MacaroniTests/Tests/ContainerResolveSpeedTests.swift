@@ -47,4 +47,28 @@ class ContainerResolveSpeedTests: XCTestCase {
             }
         }
     }
+
+    func testResolvingSpeedLocked() throws {
+        container.lock()
+
+        if #available(iOS 16, macOS 13, *) {
+            let clock = ContinuousClock()
+            let elapsed = clock.measure {
+                for _ in 0 ... 100000 {
+                    let _: String? = try? container.resolve()
+                    let _: Int? = try? container.resolve()
+                    let _: Double? = try? container.resolve()
+                }
+            }
+            XCTAssertTrue(elapsed < .seconds(0.5), "Resolving is to slow for some reason (limit is 0.5 seconds for 300 000 resolves")
+        } else {
+            measure {
+                for _ in 0 ... 10000 {
+                    let _: String? = try? container.resolve()
+                    let _: Int? = try? container.resolve()
+                    let _: Double? = try? container.resolve()
+                }
+            }
+        }
+    }
 }

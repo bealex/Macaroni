@@ -14,7 +14,7 @@ extension ContainerLookupPolicy {
     ) -> Value {
         guard let container = container(for: instance, file: file, function: function, line: line) else {
             let enclosingType = String(reflecting: instance.self)
-            Macaroni.logger.die("Can't find container in \"\(enclosingType)\" object", file: file, function: function, line: line)
+            Macaroni.logger.die(message: "Can't find container in \"\(enclosingType)\" object", file: file, function: function, line: line)
         }
 
         let value: Value
@@ -26,7 +26,7 @@ extension ContainerLookupPolicy {
             } catch {
                 let valueType = String(reflecting: Value.self)
                 let enclosingType = String(reflecting: instance.self)
-                Macaroni.logger.die("Can't find resolver for \"\(valueType)\" type in \"\(enclosingType)\" object")
+                Macaroni.logger.die(message: "Can't find resolver for \"\(valueType)\" type in \"\(enclosingType)\" object")
             }
         }
         return value

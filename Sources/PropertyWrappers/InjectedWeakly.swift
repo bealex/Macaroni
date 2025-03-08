@@ -11,9 +11,9 @@
 @propertyWrapper
 public struct InjectedWeakly<ValueType> {
     public var wrappedValue: ValueType? {
-        get { Macaroni.logger.die("Injecting only works for class enclosing types") }
+        get { Macaroni.logger.die(message: "Injecting only works for class enclosing types") }
         // We need setter here so that KeyPaths in subscript were writable.
-        set { Macaroni.logger.die("Injecting only works for class enclosing types") }
+        set { Macaroni.logger.die(message: "Injecting only works for class enclosing types") }
     }
 
     // We need to strongly handle policy to be able to resolve lazily.
@@ -29,18 +29,18 @@ public struct InjectedWeakly<ValueType> {
         switch initialization {
             case .resolvingOnInit(let container):
                 guard let container = container ?? Container.lookupPolicy.container(for: Self.self, file: file, function: function, line: line) else {
-                    Macaroni.logger.die("Can't find container for InjectedWeakly immediateResolve", file: file, function: function, line: line)
+                    Macaroni.logger.die(message: "Can't find container for InjectedWeakly immediateResolve", file: file, function: function, line: line)
                 }
 
                 do {
                     let storage: ValueType = try container.resolve()
                     self.storage = storage as AnyObject
-                    Macaroni.logger.debug("Injecting (eager from container): \(String(describing: ValueType.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
+                    Macaroni.logger.debug(message: "Injecting (eager from container): \(String(describing: ValueType.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
                 } catch {
                     if container.isResolvable(ValueType.self) {
-                        Macaroni.logger.die("Parametrized resolvers are not supported for greedy injection (\"\(String(describing: ValueType.self))\").", file: file, function: function, line: line)
+                        Macaroni.logger.die(message: "Parametrized resolvers are not supported for greedy injection (\"\(String(describing: ValueType.self))\").", file: file, function: function, line: line)
                     } else {
-                        Macaroni.logger.die("Dependency \"\(String(describing: ValueType.self))\" does not have a resolver", file: file, function: function, line: line)
+                        Macaroni.logger.die(message: "Dependency \"\(String(describing: ValueType.self))\" does not have a resolver", file: file, function: function, line: line)
                     }
                 }
             case .capturingContainerOnInit(let container):
@@ -65,7 +65,7 @@ public struct InjectedWeakly<ValueType> {
             } else {
                 let alternative = instance[keyPath: storageKeyPath].alternative
                 guard let findPolicy = instance[keyPath: storageKeyPath].findPolicyCapture.policy else {
-                    Macaroni.logger.die("Container selection policy (Macaroni.Container.policy) is not set")
+                    Macaroni.logger.die(message: "Container selection policy (Macaroni.Container.policy) is not set")
                 }
 
                 if let value: ValueType? = findPolicy.resolve(for: instance, option: alternative?.name) {

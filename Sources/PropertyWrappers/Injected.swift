@@ -59,7 +59,7 @@ public struct Injected<ValueType> {
             if let value = storage {
                 return value
             } else {
-                Macaroni.logger.die("Injected value is nil")
+                Macaroni.logger.die(message: "Injected value is nil")
             }
         }
         set { /* compiler needs this. We do not. */ }
@@ -84,7 +84,7 @@ public struct Injected<ValueType> {
             case .resolvingOnInit(let container):
                 projectedValue = .container(Container.alwaysFailRootContainer)
                 guard let container = container ?? Container.lookupPolicy?.container(for: Self.self, file: file, function: function, line: line) else {
-                    Macaroni.logger.die("Can't find container for Injected immediateResolve", file: file, function: function, line: line)
+                    Macaroni.logger.die(message: "Can't find container for Injected immediateResolve", file: file, function: function, line: line)
                 }
 
                 projectedValue = .container(container, alternative: alternative?.name)
@@ -97,26 +97,26 @@ public struct Injected<ValueType> {
                     projectedValue = .container(Container.alwaysFailRootContainer)
                     capturePolicy = .onInitialization(policy)
                 } else {
-                    Macaroni.logger.die("Container.lookupPolicy is not initialized", file: file, function: function, line: line)
+                    Macaroni.logger.die(message: "Container.lookupPolicy is not initialized", file: file, function: function, line: line)
                 }
             case .lazily:
                 projectedValue = .container(Container.alwaysFailRootContainer)
                 capturePolicy = .onFirstUsage
-                Macaroni.logger.debug("Injecting (lazy): \(String(reflecting: ValueType.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
+                Macaroni.logger.debug(message: "Injecting (lazy): \(String(reflecting: ValueType.self))\(alternative.map { "/\($0.name)" } ?? "")", file: file, function: function, line: line)
         }
     }
 
     public init(wrappedValue: ValueType, file: StaticString = #fileID, function: String = #function, line: UInt = #line) {
         storage = wrappedValue
         projectedValue = .container(Container.alwaysFailRootContainer)
-        Macaroni.logger.debug("Injecting (eager, value): \(String(reflecting: ValueType.self))", file: file, function: function, line: line)
+        Macaroni.logger.debug(message: "Injecting (eager, value): \(String(reflecting: ValueType.self))", file: file, function: function, line: line)
     }
 
     // Is used for function parameter injection.
     public init(projectedValue: ResolveFrom, file: StaticString = #fileID, function: String = #function, line: UInt = #line) {
         self.projectedValue = projectedValue
         resolveRightNowIfPossible(file: file, function: function, line: line)
-        Macaroni.logger.debug("Injecting (eager, projected): \(String(reflecting: ValueType.self))", file: file, function: function, line: line)
+        Macaroni.logger.debug(message: "Injecting (eager, projected): \(String(reflecting: ValueType.self))", file: file, function: function, line: line)
     }
 
     private mutating func resolveRightNowIfPossible(file: StaticString = #fileID, function: String = #function, line: UInt = #line) {
@@ -125,12 +125,12 @@ public struct Injected<ValueType> {
                 if let value = value as? ValueType {
                     storage = value
                     Macaroni.logger.debug(
-                        "Injecting (eager from container): \(String(reflecting: ValueType.self))\(alternative.map { "/\($0.name)" } ?? "")",
+                        message: "Injecting (eager from container): \(String(reflecting: ValueType.self))\(alternative.map { "/\($0.name)" } ?? "")",
                         file: file, function: function, line: line
                     )
                 } else {
                     Macaroni.logger.die(
-                        "Injected value is not of type \"\(String(reflecting: ValueType.self))\": (\(value))",
+                        message: "Injected value is not of type \"\(String(reflecting: ValueType.self))\": (\(value))",
                         file: file, function: function, line: line
                     )
                 }
@@ -143,7 +143,7 @@ public struct Injected<ValueType> {
                     storage = resolved
                 } catch {
                     Macaroni.logger.die(
-                        "Can't find resolver for \"\(String(reflecting: ValueType.self))\" in container (\(container.name))",
+                        message: "Can't find resolver for \"\(String(reflecting: ValueType.self))\" in container (\(container.name))",
                         file: file, function: function, line: line
                     )
                 }
@@ -176,12 +176,12 @@ public struct Injected<ValueType> {
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) -> ValueType {
         Macaroni.logger.debug(
-            "Resolving [\(String(reflecting: ValueType.self))\(alternative.map { " / \($0)" } ?? "")] in the \(String(reflecting: type(of: enclosingInstance)))",
+            message: "Resolving [\(String(reflecting: ValueType.self))\(alternative.map { " / \($0)" } ?? "")] in the \(String(reflecting: type(of: enclosingInstance)))",
             file: file, function: function, line: line
         )
         guard let findPolicy else {
             Macaroni.logger.die(
-                "Can't find container for [\(String(reflecting: ValueType.self))\(alternative.map { " / \($0)" } ?? "")] to \(String(reflecting: type(of: enclosingInstance)))",
+                message: "Can't find container for [\(String(reflecting: ValueType.self))\(alternative.map { " / \($0)" } ?? "")] to \(String(reflecting: type(of: enclosingInstance)))",
                 file: file, function: function, line: line
             )
         }

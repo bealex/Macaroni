@@ -22,14 +22,19 @@ public protocol MacaroniLogger {
 /// Default Macaroni logging methods.
 extension MacaroniLogger {
     @inlinable
-    func debug(_ message: String, file: StaticString = #fileID, function: String = #function, line: UInt = #line) {
-        log(message, level: .debug, file: file, function: function, line: line)
+    func log(message: @autoclosure () -> String, level: MacaroniLoggingLevel, file: StaticString = #fileID, function: String = #function, line: UInt = #line) {
+        log(message(), level: level, file: file, function: function, line: line)
     }
 
     @inlinable
-    func die(_ message: String, file: StaticString = #fileID, function: String = #function, line: UInt = #line) -> Never {
-        log(message, level: .error, file: file, function: function, line: line)
-        die(message, file: file, function: function, line: line)
+    func debug(message: @autoclosure () -> String, file: StaticString = #fileID, function: String = #function, line: UInt = #line) {
+        log(message(), level: .debug, file: file, function: function, line: line)
+    }
+
+    @inlinable
+    func die(message: @autoclosure () -> String, file: StaticString = #fileID, function: String = #function, line: UInt = #line) -> Never {
+        log(message(), level: .error, file: file, function: function, line: line)
+        die(message(), file: file, function: function, line: line)
     }
 }
 

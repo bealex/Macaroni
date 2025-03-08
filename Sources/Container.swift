@@ -45,7 +45,7 @@ public final class Container {
 
         Container.counter += 1
         Macaroni.logger.debug(
-            "\(self.name)\(self.parent == nil ? "" : " (parent: \(parent?.name ?? "???"))") created",
+            message: "\(self.name)\(self.parent == nil ? "" : " (parent: \(parent?.name ?? "???"))") created",
             file: file, function: function, line: line
         )
     }
@@ -82,12 +82,12 @@ public final class Container {
             if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
                 typeResolvers[optionalKey] = resolver
                 Macaroni.logger.debug(
-                    "\(name) is registering resolver for \(String(describing: D.self)) and its Optional\(alternative.map { " / \($0)" } ?? "")",
+                    message: "\(name) is registering resolver for \(String(describing: D.self)) and its Optional\(alternative.map { " / \($0)" } ?? "")",
                     file: file, function: function, line: line
                 )
             } else {
                 Macaroni.logger.debug(
-                    "\(name) is registering resolver for \(String(describing: D.self))\(alternative.map { " / \($0)" } ?? "")",
+                    message: "\(name) is registering resolver for \(String(describing: D.self))\(alternative.map { " / \($0)" } ?? "")",
                     file: file, function: function, line: line
                 )
             }
@@ -108,12 +108,12 @@ public final class Container {
             if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
                 typeParametrizedResolvers[optionalKey] = resolver
                 Macaroni.logger.debug(
-                    "\(name) is registering parametrized resolver for \(String(describing: D.self)) and its Optional\(alternative.map { " / \($0)" } ?? "")",
+                    message: "\(name) is registering parametrized resolver for \(String(describing: D.self)) and its Optional\(alternative.map { " / \($0)" } ?? "")",
                     file: file, function: function, line: line
                 )
             } else {
                 Macaroni.logger.debug(
-                    "\(name) is registering parametrized resolver for \(String(describing: D.self))\(alternative.map { " / \($0)" } ?? "")",
+                    message: "\(name) is registering parametrized resolver for \(String(describing: D.self))\(alternative.map { " / \($0)" } ?? "")",
                     file: file, function: function, line: line
                 )
             }
@@ -161,7 +161,7 @@ public final class Container {
         queue.async(flags: .barrier) { [self] in
             typeResolvers = [:]
             typeParametrizedResolvers = [:]
-            Macaroni.logger.debug("\(name) cleared", file: file, function: function, line: line)
+            Macaroni.logger.debug(message: "\(name) cleared", file: file, function: function, line: line)
         }
     }
 }

@@ -67,24 +67,45 @@ public final class Container {
     }
 
     /// Resolvers that can create object by type.
-    private var typeResolvers: [String: () -> Any] = [:]
+    private var typeResolvers: [ObjectIdentifier: [String: () -> Any]] = [:]
     /// Resolvers that can create object, based on type and some arbitrary parameter.
     /// What is this parameter, depends on the usage.
-    private var typeParametrizedResolvers: [String: (_ parameter: Any) -> Any] = [:]
+    private var typeParametrizedResolvers: [ObjectIdentifier: [String: (_ parameter: Any) -> Any]] = [:]
 
-    private func key<D>(_ type: D.Type, alternative: String?) -> String {
+    private func keys<D>(_ type: D.Type, alternative: String?) -> (ObjectIdentifier, String?) {
+        (ObjectIdentifier(type), alternative)
+
+//        if let alternative {
+//            "\(String(reflecting: type))\(alternative)"
+//        } else {
+//            String(reflecting: type)
+//        }
+    }
+
+    private let defaultAlternativeKey: String = "__default"
+
+    private func resolver(_ objectId: ObjectIdentifier, alternative: String?) -> (() -> Any)? {
         if let alternative {
-            "\(String(reflecting: type))\(alternative)"
+            return typeResolvers[objectId]?[alternative]
         } else {
-            String(reflecting: type)
+            return typeResolvers[objectId]?[defaultAlternativeKey]
+        }
+    }
+
+    private func parametrizedResolver(_ objectId: ObjectIdentifier, alternative: String?) -> ((_ parameter: Any) -> Any)? {
+        if let alternative {
+            return typeParametrizedResolvers[objectId]?[alternative]
+        } else {
+            return typeParametrizedResolvers[objectId]?[defaultAlternativeKey]
         }
     }
 
     /// Returns true, if type is resolvable with the container or its parent.
     public func isResolvable<D>(_ type: D.Type, alternative: String? = nil) -> Bool {
         queue.sync {
-            let key = self.key(type, alternative: alternative)
-            return typeParametrizedResolvers[key] != nil || typeResolvers[key] != nil || (parent?.isResolvable(type) ?? false)
+            let objectId = ObjectIdentifier(type)
+            return parametrizedResolver(ObjectIdentifier(type), alternative: alternative) != nil ||
+                    resolver(ObjectIdentifier(type), alternative: alternative) != nil || (parent?.isResolvable(type) ?? false)
         }
     }
 
@@ -96,13 +117,14 @@ public final class Container {
     ) {
         guard !isLocked else { return assertionFailure("Container is locked") }
 
+        let alternativeKey = alternative ?? defaultAlternativeKey
         queue.async(flags: .barrier) { [self] in
-            let nonOptionalKey = key(D.self, alternative: alternative)
-            typeResolvers[nonOptionalKey] = resolver
+            let nonOptionalObjectId = ObjectIdentifier(D.self)
+            let optionalObjectId = ObjectIdentifier(Optional<D>.self)
+            typeResolvers[nonOptionalObjectId, default: [:]][alternativeKey] = resolver
 
-            let optionalKey = key(Optional<D>.self, alternative: alternative)
-            if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
-                typeResolvers[optionalKey] = resolver
+            if self.resolver(optionalObjectId, alternative: alternativeKey) == nil && parametrizedResolver(optionalObjectId, alternative: alternativeKey) == nil {
+                typeResolvers[optionalObjectId, default: [:]][alternativeKey] = resolver
                 Macaroni.logger.debug(
                     message: "\(name) is registering resolver for \(String(describing: D.self)) and its Optional\(alternative.map { " / \($0)" } ?? "")",
                     file: file, function: function, line: line
@@ -124,13 +146,14 @@ public final class Container {
     ) {
         guard !isLocked else { return assertionFailure("Container is locked") }
 
+        let alternativeKey = alternative ?? defaultAlternativeKey
         queue.async(flags: .barrier) { [self] in
-            let nonOptionalKey = key(D.self, alternative: alternative)
-            typeParametrizedResolvers[nonOptionalKey] = resolver
+            let nonOptionalObjectId = ObjectIdentifier(D.self)
+            let optionalObjectId = ObjectIdentifier(Optional<D>.self)
+            typeParametrizedResolvers[nonOptionalObjectId, default: [:]][alternativeKey] = resolver
 
-            let optionalKey = key(Optional<D>.self, alternative: alternative)
-            if typeResolvers[optionalKey] == nil && typeParametrizedResolvers[optionalKey] == nil {
-                typeParametrizedResolvers[optionalKey] = resolver
+            if self.resolver(optionalObjectId, alternative: alternativeKey) == nil && parametrizedResolver(optionalObjectId, alternative: alternativeKey) == nil {
+                typeParametrizedResolvers[optionalObjectId, default: [:]][alternativeKey] = resolver
                 Macaroni.logger.debug(
                     message: "\(name) is registering parametrized resolver for \(String(describing: D.self)) and its Optional\(alternative.map { " / \($0)" } ?? "")",
                     file: file, function: function, line: line
@@ -149,9 +172,10 @@ public final class Container {
         alternative: String? = nil,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) throws -> D {
-        let key = self.key(D.self, alternative: alternative)
-
-        let resolver = isLocked ? self.typeResolvers[key] : queue.sync { self.typeResolvers[key] }
+        let objectId = ObjectIdentifier(D.self)
+        let resolver = isLocked
+            ? resolver(objectId, alternative: alternative)
+            : queue.sync { self.resolver(objectId, alternative: alternative) }
         if let resolver {
             return resolver() as! D
         } else if let parent = self.parent {
@@ -168,9 +192,10 @@ public final class Container {
         alternative: String? = nil,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) throws -> D {
-        let key = self.key(D.self, alternative: alternative)
-        let resolver = isLocked ? self.typeParametrizedResolvers[key] : queue.sync { self.typeParametrizedResolvers[key] }
-
+        let objectId = ObjectIdentifier(D.self)
+        let resolver = isLocked
+            ? parametrizedResolver(objectId, alternative: alternative)
+            : queue.sync { self.parametrizedResolver(objectId, alternative: alternative) }
         if let resolver {
             return resolver(parameter) as! D
         } else if let parent = self.parent {

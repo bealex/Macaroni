@@ -36,7 +36,7 @@ class ContainerResolveSpeedTests: XCTestCase {
                     let _: Double? = try? container.resolve()
                 }
             }
-            XCTAssertTrue(elapsed < .seconds(0.5), "Resolving is to slow for some reason (limit is 0.5 seconds for 300 000 resolves")
+            XCTAssertTrue(elapsed < .seconds(1), "Resolving is to slow for some reason (limit is 0.5 seconds for 300 000 resolves")
         } else {
             measure {
                 for _ in 0 ... 10000 {

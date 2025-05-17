@@ -125,6 +125,11 @@ let willBeInstantiatedOnFirstAccess = LazilyInitialized { MyServiceImplementatio
 container.register { () -> MyService in willBeInstantiatedOnFirstAccess.value }
 ```
 
+## Locking the container
+
+After you finished registering all the dependencies into the container, you can `lock` it. In the lock state the container can't register
+dependencies, but at the same time, dependency access is faster (by not going via the queue).
+
 ## `Injected` options
 
 #### Class property injection

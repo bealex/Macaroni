@@ -27,16 +27,17 @@ public enum MacaroniError: Error {
 /// the type of type that contains property that is being resolved.
 ///
 /// There is a `@Injected` property wrapper that helps to inject objects into classes (mostly).
-public final class Container {
+public final class Container: @unchecked Sendable {
     let name: String
     let parent: Container?
 
-    private static var counter: Int = 1
     private let queue: DispatchQueue
 
     /// you can lock container in case it will not be updated anymore.
     /// This should speed up container access, but remove ability to add new resolvers.
     private var isLocked: Bool = false
+
+    nonisolated(unsafe) private static var counter: Int = 1
 
     public init(
         parent: Container? = nil,
@@ -104,8 +105,8 @@ public final class Container {
     public func isResolvable<D>(_ type: D.Type, alternative: String? = nil) -> Bool {
         queue.sync {
             let objectId = ObjectIdentifier(type)
-            return parametrizedResolver(ObjectIdentifier(type), alternative: alternative) != nil ||
-                    resolver(ObjectIdentifier(type), alternative: alternative) != nil || (parent?.isResolvable(type) ?? false)
+            return parametrizedResolver(objectId, alternative: alternative) != nil ||
+                    resolver(objectId, alternative: alternative) != nil || (parent?.isResolvable(type) ?? false)
         }
     }
 

@@ -28,6 +28,6 @@ public class EnclosingTypeContainer: ContainerLookupPolicy {
         for instance: EnclosingType,
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) -> Container? {
-        (instance as? Containerable)?.container
+        (instance as? Containerable)?.container ?? defaultContainer
     }
 }

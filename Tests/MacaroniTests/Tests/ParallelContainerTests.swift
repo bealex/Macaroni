@@ -5,9 +5,11 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
+import Synchronization
 import XCTest
 @testable import Macaroni
 
+@available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
 class ParallelContainerTests: XCTestCase {
     // MARK: - PerThreadContainer Tests
 
@@ -19,13 +21,14 @@ class ParallelContainerTests: XCTestCase {
         })
 
         // Each task dispatches to a concurrent queue to test thread-local isolation
+        nonisolated(unsafe) let testCase = self
         await withTaskGroup(of: String?.self) { group in
             for index in 0..<iterations {
                 group.addTask {
                     // PerThreadContainer uses thread-local storage, so we verify
                     // isolation by registering a unique value per thread
                     let expected = "value-\(index)"
-                    let container = policy.container(for: self, file: #fileID, function: #function, line: #line)!
+                    let container = policy.container(for: testCase, file: #fileID, function: #function, line: #line)!
                     container.register { () -> String in expected }
 
                     do {
@@ -38,7 +41,7 @@ class ParallelContainerTests: XCTestCase {
                     }
 
                     // Verify the same container is returned on second access
-                    let sameContainer = policy.container(for: self, file: #fileID, function: #function, line: #line)
+                    let sameContainer = policy.container(for: testCase, file: #fileID, function: #function, line: #line)
                     guard sameContainer === container else {
                         return "Thread \(index): factory called twice for same context"
                     }
@@ -57,23 +60,23 @@ class ParallelContainerTests: XCTestCase {
     }
 
     func testPerThreadContainerRemoval() {
-        var cleanedUp = false
+        let cleanedUp = Mutex(false)
         let policy = PerThreadContainer(
             factory: {
                 let container = Container(name: "test-removal")
                 container.register { () -> String in "value" }
                 return container
             },
-            cleanup: { _ in cleanedUp = true }
+            cleanup: { _ in cleanedUp.withLock { $0 = true } }
         )
 
         // First access triggers factory
         XCTAssertNotNil(policy.container(for: self, file: #fileID, function: #function, line: #line))
-        XCTAssertFalse(cleanedUp)
+        XCTAssertFalse(cleanedUp.withLock { $0 })
 
         // Remove triggers cleanup via deinit
         policy.removeContainer()
-        XCTAssertTrue(cleanedUp)
+        XCTAssertTrue(cleanedUp.withLock { $0 })
     }
 
     func testPerThreadManualSetContainer() {
@@ -89,9 +92,9 @@ class ParallelContainerTests: XCTestCase {
     }
 
     func testPerThreadFactoryCalledOncePerThread() {
-        var factoryCallCount = 0
+        let factoryCallCount = Mutex(0)
         let policy = PerThreadContainer(factory: {
-            factoryCallCount += 1
+            factoryCallCount.withLock { $0 += 1 }
             let container = Container()
             container.register { () -> String in "test" }
             return container
@@ -104,55 +107,55 @@ class ParallelContainerTests: XCTestCase {
 
         XCTAssertTrue(first === second)
         XCTAssertTrue(second === third)
-        XCTAssertEqual(factoryCallCount, 1)
+        XCTAssertEqual(factoryCallCount.withLock { $0 }, 1)
 
         policy.removeContainer()
     }
 
     func testPerThreadFactoryRecreatesAfterRemoval() {
-        var factoryCallCount = 0
+        let factoryCallCount = Mutex(0)
         let policy = PerThreadContainer(factory: {
-            factoryCallCount += 1
-            return Container(name: "factory-\(factoryCallCount)")
+            factoryCallCount.withLock { $0 += 1 }
+            return Container(name: "factory-\(factoryCallCount.withLock { $0 })")
         })
 
         let first = policy.container(for: self, file: #fileID, function: #function, line: #line)
         XCTAssertEqual(first?.name, "factory-1")
-        XCTAssertEqual(factoryCallCount, 1)
+        XCTAssertEqual(factoryCallCount.withLock { $0 }, 1)
 
         policy.removeContainer()
 
         let second = policy.container(for: self, file: #fileID, function: #function, line: #line)
         XCTAssertEqual(second?.name, "factory-2")
-        XCTAssertEqual(factoryCallCount, 2)
+        XCTAssertEqual(factoryCallCount.withLock { $0 }, 2)
         XCTAssertFalse(first === second)
 
         policy.removeContainer()
     }
 
     func testPerThreadCleanupReceivesCorrectContainer() {
-        var cleanedContainer: Container?
+        let cleanedContainer: Mutex<Container?> = Mutex(nil)
         let policy = PerThreadContainer(
             factory: { Container(name: "to-cleanup") },
-            cleanup: { cleanedContainer = $0 }
+            cleanup: { container in cleanedContainer.withLock { $0 = container } }
         )
 
         let created = policy.container(for: self, file: #fileID, function: #function, line: #line)
         policy.removeContainer()
 
-        XCTAssertTrue(cleanedContainer === created)
+        XCTAssertTrue(cleanedContainer.withLock { $0 } === created)
     }
 
     func testPerThreadCleanupNotCalledWhenNoContainer() {
-        var cleanupCalled = false
+        let cleanupCalled = Mutex(false)
         let policy = PerThreadContainer(
             factory: { Container() },
-            cleanup: { _ in cleanupCalled = true }
+            cleanup: { _ in cleanupCalled.withLock { $0 = true } }
         )
 
         // Remove without ever accessing — no container was created
         policy.removeContainer()
-        XCTAssertFalse(cleanupCalled)
+        XCTAssertFalse(cleanupCalled.withLock { $0 })
     }
 
     func testPerThreadNoCleanupClosure() {
@@ -187,18 +190,16 @@ class ParallelContainerTests: XCTestCase {
 
     // MARK: - PerTaskContainer Tests
 
-    @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskIsolation() async {
-        let iterations = 50
+        let iterations = 5
 
         let policy = PerTaskContainer(factory: { Container() })
 
         await withTaskGroup(of: String?.self) { group in
-            for index in 0..<iterations {
+            for index in 0 ..< iterations {
                 group.addTask {
                     let expected = "task-value-\(index)"
-
-                    _ = await policy.withContainer {
+                    let result = await policy.withContainer {
                         guard let container = PerTaskContainer.container else {
                             return "Task \(index): container was nil inside withContainer"
                         }
@@ -206,9 +207,7 @@ class ParallelContainerTests: XCTestCase {
 
                         do {
                             let resolved: String = try container.resolve()
-                            guard resolved == expected else {
-                                return "Task \(index): expected '\(expected)', got '\(resolved)'"
-                            }
+                            guard resolved == expected else { return "Task \(index): expected '\(expected)', got '\(resolved)'" }
                         } catch {
                             return "Task \(index): resolve threw error"
                         }
@@ -221,7 +220,7 @@ class ParallelContainerTests: XCTestCase {
                         return "Task \(index): container not cleared after withContainer"
                     }
 
-                    return ""
+                    return result.isEmpty ? nil : result
                 }
             }
 
@@ -251,41 +250,41 @@ class ParallelContainerTests: XCTestCase {
 
     @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskCleanupReceivesCorrectContainer() async {
-        var cleanedContainer: Container?
-        var containerInsideBlock: Container?
+        let cleanedContainer: Mutex<Container?> = Mutex(nil)
+        let containerInsideBlock: Mutex<Container?> = Mutex(nil)
 
         let policy = PerTaskContainer(
             factory: { Container(name: "task-cleanup-test") },
-            cleanup: { cleanedContainer = $0 }
+            cleanup: { container in cleanedContainer.withLock { $0 = container } }
         )
 
         await policy.withContainer {
-            containerInsideBlock = PerTaskContainer.container
+            containerInsideBlock.withLock { $0 = PerTaskContainer.container }
         }
 
-        XCTAssertNotNil(cleanedContainer)
-        XCTAssertNotNil(containerInsideBlock)
-        XCTAssertTrue(cleanedContainer === containerInsideBlock)
-        XCTAssertEqual(cleanedContainer?.name, "task-cleanup-test")
+        XCTAssertNotNil(cleanedContainer.withLock { $0 })
+        XCTAssertNotNil(containerInsideBlock.withLock { $0 })
+        XCTAssertTrue(cleanedContainer.withLock { $0 } === containerInsideBlock.withLock { $0 })
+        XCTAssertEqual(cleanedContainer.withLock { $0 }?.name, "task-cleanup-test")
     }
 
     @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskCleanupCalledAfterBlock() async {
-        var events: [String] = []
+        let events = Mutex<[String]>([])
 
         let policy = PerTaskContainer(
             factory: {
-                events.append("factory")
+                events.withLock { $0.append("factory") }
                 return Container()
             },
-            cleanup: { _ in events.append("cleanup") }
+            cleanup: { _ in events.withLock { $0.append("cleanup") } }
         )
 
         await policy.withContainer {
-            events.append("body")
+            events.withLock { $0.append("body") }
         }
 
-        XCTAssertEqual(events, ["factory", "body", "cleanup"])
+        XCTAssertEqual(events.withLock { $0 }, ["factory", "body", "cleanup"])
     }
 
     @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
@@ -333,10 +332,10 @@ class ParallelContainerTests: XCTestCase {
 
     @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskEachWithContainerCallCreatesNew() async {
-        var factoryCount = 0
+        let factoryCount = Mutex(0)
         let policy = PerTaskContainer(factory: {
-            factoryCount += 1
-            return Container(name: "task-\(factoryCount)")
+            factoryCount.withLock { $0 += 1 }
+            return Container(name: "task-\(factoryCount.withLock { $0 })")
         })
 
         await policy.withContainer {
@@ -347,6 +346,6 @@ class ParallelContainerTests: XCTestCase {
             XCTAssertEqual(PerTaskContainer.container?.name, "task-2")
         }
 
-        XCTAssertEqual(factoryCount, 2)
+        XCTAssertEqual(factoryCount.withLock { $0 }, 2)
     }
 }

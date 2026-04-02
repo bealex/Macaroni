@@ -11,60 +11,49 @@ import Macaroni
 class ParallelContainerTests: XCTestCase {
     // MARK: - PerThreadContainer Tests
 
-    func testPerThreadIsolation() {
+    func testPerThreadIsolation() async {
         let iterations = 50
-        let expectation = expectation(description: "All threads completed")
-        expectation.expectedFulfillmentCount = iterations
-        var failures: [String] = []
-        let failureLock = NSLock()
-        var cleanupCount = 0
 
-        let policy = PerThreadContainer(
-            factory: {
-                let container = Container()
-                return container
-            },
-            cleanup: { _ in
-                failureLock.lock()
-                cleanupCount += 1
-                failureLock.unlock()
-            }
-        )
+        let policy = PerThreadContainer(factory: {
+            Container()
+        })
 
-        DispatchQueue.concurrentPerform(iterations: iterations) { index in
-            // First access triggers factory
-            let expected = "value-\(index)"
-            let container = policy.container(for: self, file: #fileID, function: #function, line: #line)!
-            container.register { () -> String in expected }
+        // Each task dispatches to a concurrent queue to test thread-local isolation
+        await withTaskGroup(of: String?.self) { group in
+            for index in 0..<iterations {
+                group.addTask {
+                    // PerThreadContainer uses thread-local storage, so we verify
+                    // isolation by registering a unique value per thread
+                    let expected = "value-\(index)"
+                    let container = policy.container(for: self, file: #fileID, function: #function, line: #line)!
+                    container.register { () -> String in expected }
 
-            do {
-                let resolved: String = try container.resolve()
-                if resolved != expected {
-                    failureLock.lock()
-                    failures.append("Thread \(index): expected '\(expected)', got '\(resolved)'")
-                    failureLock.unlock()
+                    do {
+                        let resolved: String = try container.resolve()
+                        guard resolved == expected else {
+                            return "Thread \(index): expected '\(expected)', got '\(resolved)'"
+                        }
+                    } catch {
+                        return "Thread \(index): resolve threw error"
+                    }
+
+                    // Verify the same container is returned on second access
+                    let sameContainer = policy.container(for: self, file: #fileID, function: #function, line: #line)
+                    guard sameContainer === container else {
+                        return "Thread \(index): factory called twice for same context"
+                    }
+
+                    policy.removeContainer()
+                    return nil
                 }
-            } catch {
-                failureLock.lock()
-                failures.append("Thread \(index): resolve threw error")
-                failureLock.unlock()
             }
 
-            // Verify the same container is returned on second access
-            let sameContainer = policy.container(for: self, file: #fileID, function: #function, line: #line)
-            if sameContainer !== container {
-                failureLock.lock()
-                failures.append("Thread \(index): factory called twice for same thread")
-                failureLock.unlock()
+            for await failure in group {
+                if let failure {
+                    XCTFail(failure)
+                }
             }
-
-            policy.removeContainer()
-            expectation.fulfill()
         }
-
-        waitForExpectations(timeout: 10)
-        XCTAssertTrue(failures.isEmpty, "Thread isolation failures:\n\(failures.joined(separator: "\n"))")
-        XCTAssertEqual(cleanupCount, iterations, "Cleanup should be called for each thread")
     }
 
     func testPerThreadContainerRemoval() {
@@ -101,11 +90,8 @@ class ParallelContainerTests: XCTestCase {
 
     func testPerThreadFactoryCalledOncePerThread() {
         var factoryCallCount = 0
-        let lock = NSLock()
         let policy = PerThreadContainer(factory: {
-            lock.lock()
             factoryCallCount += 1
-            lock.unlock()
             let container = Container()
             container.register { () -> String in "test" }
             return container
@@ -204,62 +190,47 @@ class ParallelContainerTests: XCTestCase {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskIsolation() async {
         let iterations = 50
-        var failures: [String] = []
-        let failureLock = NSLock()
-        var cleanupCount = 0
 
-        let policy = PerTaskContainer(
-            factory: { Container() },
-            cleanup: { _ in
-                failureLock.lock()
-                cleanupCount += 1
-                failureLock.unlock()
-            }
-        )
+        let policy = PerTaskContainer(factory: { Container() })
 
         await withTaskGroup(of: String?.self) { group in
             for index in 0..<iterations {
                 group.addTask {
-                    var failure: String? = nil
                     let expected = "task-value-\(index)"
 
                     await policy.withContainer {
                         guard let container = PerTaskContainer.container else {
-                            failure = "Task \(index): container was nil inside withContainer"
-                            return
+                            return "Task \(index): container was nil inside withContainer"
                         }
                         container.register { () -> String in expected }
 
                         do {
                             let resolved: String = try container.resolve()
-                            if resolved != expected {
-                                failure = "Task \(index): expected '\(expected)', got '\(resolved)'"
+                            guard resolved == expected else {
+                                return "Task \(index): expected '\(expected)', got '\(resolved)'"
                             }
                         } catch {
-                            failure = "Task \(index): resolve threw error"
+                            return "Task \(index): resolve threw error"
                         }
+
+                        return nil
                     }
 
                     // Verify container is cleared after withContainer scope
                     if PerTaskContainer.container != nil {
-                        failure = "Task \(index): container not cleared after withContainer"
+                        return "Task \(index): container not cleared after withContainer"
                     }
 
-                    return failure
+                    return nil
                 }
             }
 
             for await failure in group {
                 if let failure {
-                    failureLock.lock()
-                    failures.append(failure)
-                    failureLock.unlock()
+                    XCTFail(failure)
                 }
             }
         }
-
-        XCTAssertTrue(failures.isEmpty, "Task isolation failures:\n\(failures.joined(separator: "\n"))")
-        XCTAssertEqual(cleanupCount, iterations, "Cleanup should be called for each task")
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)

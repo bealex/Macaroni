@@ -13,7 +13,7 @@ import PackageDescription
 
 let package = Package(
     name: "Macaroni",
-    platforms: [ .iOS(.v12), .macOS(.v10_14) ],
+    platforms: [ .iOS(.v13), .macOS(.v10_15) ],
     products: [
         .library(name: "Macaroni", targets: [ "Macaroni" ]),
     ],

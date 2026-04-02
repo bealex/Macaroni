@@ -27,7 +27,7 @@ public enum MacaroniError: Error {
 /// the type of type that contains property that is being resolved.
 ///
 /// There is a `@Injected` property wrapper that helps to inject objects into classes (mostly).
-public final class Container {
+public final class Container: @unchecked Sendable {
     let name: String
     let parent: Container?
 

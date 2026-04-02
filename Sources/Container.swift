@@ -27,12 +27,12 @@ public enum MacaroniError: Error {
 /// the type of type that contains property that is being resolved.
 ///
 /// There is a `@Injected` property wrapper that helps to inject objects into classes (mostly).
-public final class Container: @unchecked Sendable {
+public final class Container: Sendable {
     let name: String
     let parent: Container?
 
-    private static let counterQueue = DispatchQueue(label: "Macaroni.Container.counter")
-    private static var counter: Int = 1
+    private static nonisolated(unsafe) let counterQueue = DispatchQueue(label: "Macaroni.Container.counter")
+    private static nonisolated(unsafe) var counter: Int = 1
     private static func nextCounter() -> Int {
         counterQueue.sync {
             let value = counter
@@ -45,7 +45,7 @@ public final class Container: @unchecked Sendable {
 
     /// you can lock container in case it will not be updated anymore.
     /// This should speed up container access, but remove ability to add new resolvers.
-    private var isLocked: Bool = false
+    private nonisolated(unsafe) var isLocked: Bool = false
 
     public init(
         parent: Container? = nil,
@@ -75,10 +75,10 @@ public final class Container: @unchecked Sendable {
     }
 
     /// Resolvers that can create object by type.
-    private var typeResolvers: [ObjectIdentifier: [String: () -> Any]] = [:]
+    private nonisolated(unsafe) var typeResolvers: [ObjectIdentifier: [String: () -> Any]] = [:]
     /// Resolvers that can create object, based on type and some arbitrary parameter.
     /// What is this parameter, depends on the usage.
-    private var typeParametrizedResolvers: [ObjectIdentifier: [String: (_ parameter: Any) -> Any]] = [:]
+    private nonisolated(unsafe) var typeParametrizedResolvers: [ObjectIdentifier: [String: (_ parameter: Any) -> Any]] = [:]
 
     private func keys<D>(_ type: D.Type, alternative: String?) -> (ObjectIdentifier, String?) {
         (ObjectIdentifier(type), alternative)

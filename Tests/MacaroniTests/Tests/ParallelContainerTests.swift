@@ -32,7 +32,7 @@ class ParallelContainerTests: XCTestCase {
         )
 
         DispatchQueue.concurrentPerform(iterations: iterations) { index in
-            // Register a unique value per thread
+            // First access triggers factory
             let expected = "value-\(index)"
             let container = policy.container(for: self, file: #fileID, function: #function, line: #line)!
             container.register { () -> String in expected }
@@ -82,7 +82,7 @@ class ParallelContainerTests: XCTestCase {
         XCTAssertNotNil(policy.container(for: self, file: #fileID, function: #function, line: #line))
         XCTAssertFalse(cleanedUp)
 
-        // Remove triggers cleanup
+        // Remove triggers cleanup via deinit
         policy.removeContainer()
         XCTAssertTrue(cleanedUp)
     }
@@ -209,9 +209,7 @@ class ParallelContainerTests: XCTestCase {
         var cleanupCount = 0
 
         let policy = PerTaskContainer(
-            factory: {
-                Container()
-            },
+            factory: { Container() },
             cleanup: { _ in
                 failureLock.lock()
                 cleanupCount += 1
@@ -242,9 +240,9 @@ class ParallelContainerTests: XCTestCase {
                         }
                     }
 
-                    // Verify TaskLocal is cleared after withContainer scope
+                    // Verify container is cleared after withContainer scope
                     if PerTaskContainer.container != nil {
-                        failure = "Task \(index): TaskLocal not cleared after withContainer"
+                        failure = "Task \(index): container not cleared after withContainer"
                     }
 
                     return failure
@@ -323,7 +321,6 @@ class ParallelContainerTests: XCTestCase {
     func testPerTaskNoCleanupClosure() async {
         let policy = PerTaskContainer(factory: { Container() })
 
-        // Should work fine without cleanup closure
         await policy.withContainer {
             XCTAssertNotNil(PerTaskContainer.container)
         }

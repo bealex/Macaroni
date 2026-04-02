@@ -80,6 +80,7 @@ class ParallelContainerTests: XCTestCase {
 
     // MARK: - PerTaskContainer Tests
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskIsolation() async {
         let iterations = 50
         var failures: [String] = []
@@ -134,6 +135,7 @@ class ParallelContainerTests: XCTestCase {
         XCTAssertTrue(failures.isEmpty, "Task isolation failures:\n\(failures.joined(separator: "\n"))")
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskContainerNilByDefault() {
         XCTAssertNil(PerTaskContainer.container)
     }

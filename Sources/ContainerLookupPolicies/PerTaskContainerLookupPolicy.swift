@@ -5,6 +5,7 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 public extension ContainerLookupPolicy where Self == PerTaskContainer {
     static var perTask: ContainerLookupPolicy {
         PerTaskContainer()
@@ -13,6 +14,8 @@ public extension ContainerLookupPolicy where Self == PerTaskContainer {
 
 /// Lookup policy that stores a separate Container per Swift Task.
 /// Designed for Swift Testing, where each `@Test` runs in its own Task.
+///
+/// Available on iOS 13+, macOS 10.15+ only.
 ///
 /// Usage:
 /// ```
@@ -24,6 +27,7 @@ public extension ContainerLookupPolicy where Self == PerTaskContainer {
 ///     // @Injected properties resolve from myContainer here
 /// }
 /// ```
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 public class PerTaskContainer: ContainerLookupPolicy {
     @TaskLocal
     public static var container: Container?

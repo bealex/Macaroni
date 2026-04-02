@@ -22,5 +22,5 @@ let package = Package(
 
         .testTarget(name: "MacaroniTests", dependencies: ["Macaroni"]),
     ],
-    swiftLanguageVersions: [.v5]
+    swiftLanguageModes: [ .v5, .v6 ]
 )

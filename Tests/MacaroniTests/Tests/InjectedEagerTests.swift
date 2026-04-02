@@ -25,7 +25,7 @@ private class MyServiceImplementation: MyService {
 }
 
 private enum MyContainerHolder {
-    static var container: Container = {
+    static let container: Container = {
         let container = Container()
         container.register { () -> Int? in nil }
         container.register { () -> ToInject in .init(value: testStringValue) }
@@ -66,18 +66,21 @@ class InjectedEagerTests: BaseTestCase {
         XCTAssertEqual(testObject.myService.testValue, testStringValue)
     }
 
+    @MainActor
     func testWrongTypeInjected() {
         waitForDeathTrap(description: "Wrong type injected") {
             _ = MyControllerWrongInjectedType()
         }
     }
 
+    @MainActor
     func testNilInjected() {
         waitForDeathTrap(description: "Nil injected") {
             _ = MyControllerNilInjected()
         }
     }
 
+    @MainActor
     func testParametrizedInjected() {
         waitForDeathTrap(description: "Parametrized injected") {
             _ = MyControllerParametrizedInjected()

@@ -27,6 +27,7 @@ class BaseTestCase: XCTestCase {
         }
     }
 
+    @MainActor
     func waitForDeathTrap(description: String, testCase: @escaping () -> Void) {
         let expectation = self.expectation(description: description)
         Macaroni.logger = TestMacaroniLogger {
@@ -34,7 +35,9 @@ class BaseTestCase: XCTestCase {
             expectation.fulfill()
         }
 
-        DispatchQueue.global(qos: .userInitiated).async(execute: testCase)
+        DispatchQueue.global(qos: .userInitiated).async {
+            testCase()
+        }
         waitForExpectations(timeout: 1) { _ in
             // wait
         }

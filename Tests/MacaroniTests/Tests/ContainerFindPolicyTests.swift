@@ -40,6 +40,7 @@ class ContainerFindPolicyTests: BaseTestCase {
 
     private let testString = "Injected String"
 
+    @MainActor
     func testNoResolvePolicyInClass() {
         let container = Container()
         container.register { [self] () -> String in testString }
@@ -51,6 +52,7 @@ class ContainerFindPolicyTests: BaseTestCase {
         }
     }
 
+    @MainActor
     func testNoResolvePolicyInStruct() {
         let container = Container()
         container.register { [self] () -> String in testString }
@@ -71,6 +73,7 @@ class ContainerFindPolicyTests: BaseTestCase {
         XCTAssertTrue(instance.property == testString)
     }
 
+    @MainActor
     func testSingletonPolicyInStruct() {
         let container = Container()
         container.register { [self] () -> String in testString }
@@ -82,6 +85,7 @@ class ContainerFindPolicyTests: BaseTestCase {
         }
     }
 
+    @MainActor
     func testFromEnclosedObjectPolicyFail() {
         let container = Container()
         container.register { [self] () -> String in testString }

@@ -7,19 +7,21 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
+import Synchronization
 import XCTest
 import Macaroni
 
+@available(macOS 15.0, *)
 class InjectedLazyTests: BaseTestCase {
     let container = Container()
 
     override func setUp() {
         class LazyContainer {
-            private static var counter: Int = 0
+            private static let counter: Mutex<Int> = .init(0)
             lazy var value: String = {
-                Self.counter += 1
-                print("Created value for injection, counter: \(Self.counter)")
-                return "SomeValue \(Self.counter)"
+                let counter = Self.counter.withLock { $0 += 1; return $0 }
+                print("Created value for injection, counter: \(counter)")
+                return "SomeValue \(counter)"
             }()
             init() {}
         }

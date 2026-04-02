@@ -83,6 +83,7 @@ class InjectedTests: BaseTestCase {
         XCTAssertEqual(testObject.myStringInitializingWithParameter, testStringValue)
     }
 
+    @MainActor
     func testInjectionFail() {
         let testObject = MyControllerWrongInjection()
 
@@ -113,6 +114,7 @@ class InjectedTests: BaseTestCase {
         XCTAssertTrue(myService1 === myService2)
     }
 
+    @MainActor
     func testStructInjection() {
         let testStruct = MyStruct()
         waitForDeathTrap(description: "No value to inject") {

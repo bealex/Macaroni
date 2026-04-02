@@ -9,7 +9,7 @@
 
 /// This wrapper can be used only with classes. You must capture injected object weakly (with [weak object]) in registration closure.
 @propertyWrapper
-public struct InjectedWeakly<ValueType> {
+public struct InjectedWeakly<ValueType>: @unchecked Sendable {
     public var wrappedValue: ValueType? {
         get { Macaroni.logger.die(message: "Injecting only works for class enclosing types") }
         // We need setter here so that KeyPaths in subscript were writable.

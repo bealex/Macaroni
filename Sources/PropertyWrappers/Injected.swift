@@ -26,7 +26,7 @@ private extension Container {
 /// You can also use `@Injected` in functions: `func test(@Injected value: String)`,
 /// using it like this: `test($value: container.resolved())`.
 @propertyWrapper
-public struct Injected<ValueType> {
+public struct Injected<ValueType>: @unchecked Sendable {
     enum ContainerCapturePolicy {
         case onInitialization(ContainerLookupPolicy)
         case onFirstUsage

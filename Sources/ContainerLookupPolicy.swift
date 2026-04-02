@@ -15,7 +15,7 @@ public extension Container {
 
 /// ContainerLookupPolicy is a protocol that can control, how container for an injection is being looked up, if property wrapper is used.
 /// For now the only parameter that you can use for that is an instance of a reference type, where injection is happening.
-public protocol ContainerLookupPolicy: AnyObject {
+public protocol ContainerLookupPolicy: AnyObject, Sendable {
     /// Implement this to be able to look up for the container. For examples see [ContainerFindable.Implementations.swift]
     /// (ContainerFindable.Implementations.swift)
     /// - Parameters:

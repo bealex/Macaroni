@@ -5,11 +5,13 @@
 // License: MIT License, https://github.com/bealex/Macaroni/blob/main/LICENSE
 //
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+import Synchronization
+
+@available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
 public extension ContainerLookupPolicy where Self == PerTaskContainer {
     static func perTask(
-        factory: @escaping () -> Container,
-        cleanup: ((Container) -> Void)? = nil
+        factory: @escaping @Sendable () -> Container,
+        cleanup: (@Sendable (Container) -> Void)? = nil
     ) -> ContainerLookupPolicy {
         PerTaskContainer(factory: factory, cleanup: cleanup)
     }
@@ -40,15 +42,15 @@ public extension ContainerLookupPolicy where Self == PerTaskContainer {
 ///     // @Injected properties resolve from the factory-created container
 /// }
 /// ```
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-public class PerTaskContainer: ContainerLookupPolicy {
+@available(iOS 18.0, macOS 15, tvOS 13.0, watchOS 6.0, *)
+public final class PerTaskContainer: ContainerLookupPolicy {
     @TaskLocal
     static var holder: ContainerHolder?
 
-    private let factory: () -> Container
-    private let cleanup: ((Container) -> Void)?
+    private let factory: @Sendable () -> Container
+    private let cleanup: (@Sendable (Container) -> Void)?
 
-    public init(factory: @escaping () -> Container, cleanup: ((Container) -> Void)? = nil) {
+    public init(factory: @escaping @Sendable () -> Container, cleanup: (@Sendable (Container) -> Void)? = nil) {
         self.factory = factory
         self.cleanup = cleanup
     }

@@ -187,7 +187,7 @@ class ParallelContainerTests: XCTestCase {
 
     // MARK: - PerTaskContainer Tests
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskIsolation() async {
         let iterations = 50
 
@@ -198,7 +198,7 @@ class ParallelContainerTests: XCTestCase {
                 group.addTask {
                     let expected = "task-value-\(index)"
 
-                    await policy.withContainer {
+                    _ = await policy.withContainer {
                         guard let container = PerTaskContainer.container else {
                             return "Task \(index): container was nil inside withContainer"
                         }
@@ -213,7 +213,7 @@ class ParallelContainerTests: XCTestCase {
                             return "Task \(index): resolve threw error"
                         }
 
-                        return nil
+                        return ""
                     }
 
                     // Verify container is cleared after withContainer scope
@@ -221,7 +221,7 @@ class ParallelContainerTests: XCTestCase {
                         return "Task \(index): container not cleared after withContainer"
                     }
 
-                    return nil
+                    return ""
                 }
             }
 
@@ -233,12 +233,12 @@ class ParallelContainerTests: XCTestCase {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskContainerNilByDefault() {
         XCTAssertNil(PerTaskContainer.container)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskWithContainerReturnsValue() async {
         let policy = PerTaskContainer(factory: { Container() })
 
@@ -249,7 +249,7 @@ class ParallelContainerTests: XCTestCase {
         XCTAssertEqual(result, 42)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskCleanupReceivesCorrectContainer() async {
         var cleanedContainer: Container?
         var containerInsideBlock: Container?
@@ -269,7 +269,7 @@ class ParallelContainerTests: XCTestCase {
         XCTAssertEqual(cleanedContainer?.name, "task-cleanup-test")
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskCleanupCalledAfterBlock() async {
         var events: [String] = []
 
@@ -288,7 +288,7 @@ class ParallelContainerTests: XCTestCase {
         XCTAssertEqual(events, ["factory", "body", "cleanup"])
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskNoCleanupClosure() async {
         let policy = PerTaskContainer(factory: { Container() })
 
@@ -299,7 +299,7 @@ class ParallelContainerTests: XCTestCase {
         XCTAssertNil(PerTaskContainer.container)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskFactoryRegistrationsAreUsable() async {
         let policy = PerTaskContainer(factory: {
             let container = Container()
@@ -318,7 +318,7 @@ class ParallelContainerTests: XCTestCase {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskContainerNilOutsideWithContainer() async {
         let policy = PerTaskContainer(factory: { Container() })
 
@@ -331,7 +331,7 @@ class ParallelContainerTests: XCTestCase {
         XCTAssertNil(PerTaskContainer.container)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    @available(iOS 18.0, macOS 15.0, tvOS 13.0, watchOS 6.0, *)
     func testPerTaskEachWithContainerCallCreatesNew() async {
         var factoryCount = 0
         let policy = PerTaskContainer(factory: {

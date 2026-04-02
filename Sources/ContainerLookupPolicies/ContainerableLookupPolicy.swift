@@ -17,7 +17,7 @@ public extension ContainerLookupPolicy where Self == EnclosingTypeContainer {
     }
 }
 
-public class EnclosingTypeContainer: ContainerLookupPolicy {
+final public class EnclosingTypeContainer: ContainerLookupPolicy {
     private let defaultContainer: Container?
 
     public init(default: Container? = nil) {

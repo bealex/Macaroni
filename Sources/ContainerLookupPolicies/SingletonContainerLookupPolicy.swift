@@ -13,7 +13,7 @@ public extension ContainerLookupPolicy where Self == SingletonContainer {
     }
 }
 
-public class SingletonContainer: ContainerLookupPolicy {
+final public class SingletonContainer: ContainerLookupPolicy {
     private let container: Container
 
     public init(_ container: Container) {

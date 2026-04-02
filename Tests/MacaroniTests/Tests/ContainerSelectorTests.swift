@@ -23,7 +23,7 @@ class ContainerSelectorTests: BaseTestCase {
         var string: String
     }
 
-    class CustomContainer: ContainerLookupPolicy {
+    final class CustomContainer: ContainerLookupPolicy {
         private let container1: Container
         private let container2: Container
         private let defaultContainer: Container

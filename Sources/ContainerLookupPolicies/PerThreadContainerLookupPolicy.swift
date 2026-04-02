@@ -9,8 +9,8 @@ import Foundation
 
 public extension ContainerLookupPolicy where Self == PerThreadContainer {
     static func perThread(
-        factory: @escaping () -> Container,
-        cleanup: ((Container) -> Void)? = nil
+        factory: @escaping @Sendable () -> Container,
+        cleanup: (@Sendable (Container) -> Void)? = nil
     ) -> ContainerLookupPolicy {
         PerThreadContainer(factory: factory, cleanup: cleanup)
     }
@@ -38,13 +38,13 @@ public extension ContainerLookupPolicy where Self == PerThreadContainer {
 /// // In tearDown:
 /// (Container.lookupPolicy as! PerThreadContainer).removeContainer()
 /// ```
-public class PerThreadContainer: ContainerLookupPolicy {
+public final class PerThreadContainer: ContainerLookupPolicy {
     private static let threadDictionaryKey = "Macaroni.PerThreadContainer.holder"
 
-    private let factory: () -> Container
-    private let cleanup: ((Container) -> Void)?
+    private let factory: @Sendable () -> Container
+    private let cleanup: (@Sendable (Container) -> Void)?
 
-    public init(factory: @escaping () -> Container, cleanup: ((Container) -> Void)? = nil) {
+    public init(factory: @escaping @Sendable () -> Container, cleanup: (@Sendable (Container) -> Void)? = nil) {
         self.factory = factory
         self.cleanup = cleanup
     }

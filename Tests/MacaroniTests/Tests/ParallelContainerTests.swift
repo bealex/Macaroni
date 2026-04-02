@@ -12,18 +12,30 @@ class ParallelContainerTests: XCTestCase {
     // MARK: - PerThreadContainer Tests
 
     func testPerThreadIsolation() {
-        let policy = PerThreadContainer()
         let iterations = 50
         let expectation = expectation(description: "All threads completed")
         expectation.expectedFulfillmentCount = iterations
         var failures: [String] = []
         let failureLock = NSLock()
+        var cleanupCount = 0
+
+        let policy = PerThreadContainer(
+            factory: {
+                let container = Container()
+                return container
+            },
+            cleanup: { _ in
+                failureLock.lock()
+                cleanupCount += 1
+                failureLock.unlock()
+            }
+        )
 
         DispatchQueue.concurrentPerform(iterations: iterations) { index in
-            let container = Container(name: "thread-\(index)")
+            // Register a unique value per thread
             let expected = "value-\(index)"
+            let container = policy.container(for: self, file: #fileID, function: #function, line: #line)!
             container.register { () -> String in expected }
-            policy.setContainer(container)
 
             do {
                 let resolved: String = try container.resolve()
@@ -38,23 +50,11 @@ class ParallelContainerTests: XCTestCase {
                 failureLock.unlock()
             }
 
-            // Also verify via policy lookup
-            if let policyContainer = policy.container(for: self, file: #fileID, function: #function, line: #line) {
-                do {
-                    let resolved: String = try policyContainer.resolve()
-                    if resolved != expected {
-                        failureLock.lock()
-                        failures.append("Thread \(index) via policy: expected '\(expected)', got '\(resolved)'")
-                        failureLock.unlock()
-                    }
-                } catch {
-                    failureLock.lock()
-                    failures.append("Thread \(index) via policy: resolve threw error")
-                    failureLock.unlock()
-                }
-            } else {
+            // Verify the same container is returned on second access
+            let sameContainer = policy.container(for: self, file: #fileID, function: #function, line: #line)
+            if sameContainer !== container {
                 failureLock.lock()
-                failures.append("Thread \(index) via policy: container was nil")
+                failures.append("Thread \(index): factory called twice for same thread")
                 failureLock.unlock()
             }
 
@@ -64,18 +64,39 @@ class ParallelContainerTests: XCTestCase {
 
         waitForExpectations(timeout: 10)
         XCTAssertTrue(failures.isEmpty, "Thread isolation failures:\n\(failures.joined(separator: "\n"))")
+        XCTAssertEqual(cleanupCount, iterations, "Cleanup should be called for each thread")
     }
 
     func testPerThreadContainerRemoval() {
-        let policy = PerThreadContainer()
-        let container = Container(name: "test-removal")
-        container.register { () -> String in "value" }
+        var cleanedUp = false
+        let policy = PerThreadContainer(
+            factory: {
+                let container = Container(name: "test-removal")
+                container.register { () -> String in "value" }
+                return container
+            },
+            cleanup: { _ in cleanedUp = true }
+        )
 
-        policy.setContainer(container)
+        // First access triggers factory
         XCTAssertNotNil(policy.container(for: self, file: #fileID, function: #function, line: #line))
+        XCTAssertFalse(cleanedUp)
+
+        // Remove triggers cleanup
+        policy.removeContainer()
+        XCTAssertTrue(cleanedUp)
+    }
+
+    func testPerThreadManualSetContainer() {
+        let policy = PerThreadContainer(factory: { Container(name: "from-factory") })
+
+        let manual = Container(name: "manual")
+        policy.setContainer(manual)
+
+        let retrieved = policy.container(for: self, file: #fileID, function: #function, line: #line)
+        XCTAssertTrue(retrieved === manual, "setContainer should override factory")
 
         policy.removeContainer()
-        XCTAssertNil(policy.container(for: self, file: #fileID, function: #function, line: #line))
     }
 
     // MARK: - PerTaskContainer Tests
@@ -85,16 +106,32 @@ class ParallelContainerTests: XCTestCase {
         let iterations = 50
         var failures: [String] = []
         let failureLock = NSLock()
+        var cleanupCount = 0
+
+        let policy = PerTaskContainer(
+            factory: {
+                Container()
+            },
+            cleanup: { _ in
+                failureLock.lock()
+                cleanupCount += 1
+                failureLock.unlock()
+            }
+        )
 
         await withTaskGroup(of: String?.self) { group in
             for index in 0..<iterations {
                 group.addTask {
-                    let container = Container(name: "task-\(index)")
-                    let expected = "task-value-\(index)"
-                    container.register { () -> String in expected }
-
                     var failure: String? = nil
-                    await PerTaskContainer.$container.withValue(container) {
+                    let expected = "task-value-\(index)"
+
+                    await policy.withContainer {
+                        guard let container = PerTaskContainer.container else {
+                            failure = "Task \(index): container was nil inside withContainer"
+                            return
+                        }
+                        container.register { () -> String in expected }
+
                         do {
                             let resolved: String = try container.resolve()
                             if resolved != expected {
@@ -103,20 +140,11 @@ class ParallelContainerTests: XCTestCase {
                         } catch {
                             failure = "Task \(index): resolve threw error"
                         }
-
-                        // Verify via TaskLocal
-                        if let taskContainer = PerTaskContainer.container {
-                            if taskContainer.name != container.name {
-                                failure = "Task \(index): TaskLocal returned wrong container '\(taskContainer.name)'"
-                            }
-                        } else {
-                            failure = "Task \(index): TaskLocal container was nil"
-                        }
                     }
 
-                    // Verify TaskLocal is cleared after withValue scope
+                    // Verify TaskLocal is cleared after withContainer scope
                     if PerTaskContainer.container != nil {
-                        failure = "Task \(index): TaskLocal not cleared after withValue"
+                        failure = "Task \(index): TaskLocal not cleared after withContainer"
                     }
 
                     return failure
@@ -133,6 +161,7 @@ class ParallelContainerTests: XCTestCase {
         }
 
         XCTAssertTrue(failures.isEmpty, "Task isolation failures:\n\(failures.joined(separator: "\n"))")
+        XCTAssertEqual(cleanupCount, iterations, "Cleanup should be called for each task")
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)

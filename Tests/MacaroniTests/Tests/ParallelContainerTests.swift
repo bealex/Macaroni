@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import Macaroni
+@testable import Macaroni
 
 class ParallelContainerTests: XCTestCase {
     // MARK: - PerThreadContainer Tests

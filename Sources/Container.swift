@@ -31,7 +31,16 @@ public final class Container: @unchecked Sendable {
     let name: String
     let parent: Container?
 
+    private static let counterQueue = DispatchQueue(label: "Macaroni.Container.counter")
     private static var counter: Int = 1
+    private static func nextCounter() -> Int {
+        counterQueue.sync {
+            let value = counter
+            counter += 1
+            return value
+        }
+    }
+
     private let queue: DispatchQueue
 
     /// you can lock container in case it will not be updated anymore.
@@ -44,10 +53,9 @@ public final class Container: @unchecked Sendable {
         file: StaticString = #fileID, function: String = #function, line: UInt = #line
     ) {
         self.parent = parent
-        self.name = name ?? "UnnamedContainer.\(Container.counter)"
+        let id = Container.nextCounter()
+        self.name = name ?? "UnnamedContainer.\(id)"
         queue = DispatchQueue(label: "container.\(self.name)", attributes: [ .concurrent ])
-
-        Container.counter += 1
         Macaroni.logger.debug(
             message: "\(self.name)\(self.parent == nil ? "" : " (parent: \(parent?.name ?? "???"))") created",
             file: file, function: function, line: line

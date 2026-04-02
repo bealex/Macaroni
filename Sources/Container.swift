@@ -82,7 +82,7 @@ private class ContainerStorage: @unchecked Sendable {
         guard !isLocked else { return assertionFailure("Container is locked") }
 
         let alternativeKey = alternative ?? defaultAlternativeKey
-        queue.async(flags: .barrier) { [self] in
+        queue.sync(flags: .barrier) {
             let nonOptionalObjectId = ObjectIdentifier(D.self)
             let optionalObjectId = ObjectIdentifier(Optional<D>.self)
             typeResolvers[nonOptionalObjectId, default: [:]][alternativeKey] = resolverClosure
@@ -111,7 +111,7 @@ private class ContainerStorage: @unchecked Sendable {
         guard !isLocked else { return assertionFailure("Container is locked") }
 
         let alternativeKey = alternative ?? defaultAlternativeKey
-        queue.async(flags: .barrier) { [self] in
+        queue.sync(flags: .barrier) {
             let nonOptionalObjectId = ObjectIdentifier(D.self)
             let optionalObjectId = ObjectIdentifier(Optional<D>.self)
             typeParametrizedResolvers[nonOptionalObjectId, default: [:]][alternativeKey] = resolverClosure
@@ -160,7 +160,7 @@ private class ContainerStorage: @unchecked Sendable {
     }
 
     func cleanup(containerName: String, file: StaticString, function: String, line: UInt) {
-        queue.async(flags: .barrier) { [self] in
+        queue.sync(flags: .barrier) {
             typeResolvers = [:]
             typeParametrizedResolvers = [:]
             Macaroni.logger.debug(message: "\(containerName) cleared", file: file, function: function, line: line)
